@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<!-- saved from url=(0058)file:///C:/Users/sachi/Downloads/mortgage-simulator_8.html -->
+<html lang="ja"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>住宅ローン差額投資シミュレーター</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#f4f5f7;
+  --surface:#ffffff;
+  --surface2:#f1f3f5;
+  --border:#e0e2e8;
+  --border2:#c8cad2;
+  --text:#111318;
+  --muted:#6b7280;
+  --accent:#2563eb;
+  --accent-bg:#eff6ff;
+  --accent-text:#1d4ed8;
+  --good:#059669;
+  --good-bg:#ecfdf5;
+  --good-text:#065f46;
+  --bad:#dc2626;
+  --bad-bg:#fef2f2;
+  --bad-text:#991b1b;
+  --warn:#d97706;
+  --warn-bg:#fffbeb;
+  --warn-text:#92400e;
+  --radius:12px;
+  --radius-sm:8px;
+}
+@media(prefers-color-scheme:dark){
+  :root{
+    --bg:#0f1117;
+    --surface:#1a1d27;
+    --surface2:#222535;
+    --border:#2e3248;
+    --border2:#3e4260;
+    --text:#e8eaf0;
+    --muted:#7880a0;
+    --accent:#4f8ef7;
+    --accent-bg:#1e2d4a;
+    --accent-text:#93c5fd;
+    --good:#34d399;
+    --good-bg:#064e3b;
+    --good-text:#6ee7b7;
+    --bad:#f87171;
+    --bad-bg:#450a0a;
+    --bad-text:#fca5a5;
+    --warn:#fbbf24;
+    --warn-bg:#451a03;
+    --warn-text:#fde68a;
+  }
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Noto Sans JP',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:48px;font-size:14px;line-height:1.5}
+
+/* header */
+.header{background:var(--surface);border-bottom:1px solid var(--border);padding:20px 16px 18px}
+.header-badge{display:inline-block;background:var(--accent);color:#fff;font-size:10px;font-weight:700;letter-spacing:2px;padding:3px 8px;border-radius:4px;margin-bottom:8px}
+.header h1{font-size:18px;font-weight:800;letter-spacing:-0.3px;color:var(--text);line-height:1.3}
+.header p{font-size:12px;color:var(--muted);margin-top:4px}
+
+.page{padding:0 12px}
+
+/* section */
+.sec{margin-top:20px}
+.sec-label{font-size:10px;font-weight:700;letter-spacing:2px;color:var(--muted);margin-bottom:8px;text-transform:uppercase}
+
+/* input group */
+.grp{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.row{display:flex;align-items:center;padding:12px 14px;border-bottom:1px solid var(--border);gap:10px}
+.row:last-child{border-bottom:none}
+.rl{flex:1;font-size:13px;font-weight:600;color:var(--text);line-height:1.3}
+.rl span{display:block;font-size:11px;font-weight:400;color:var(--muted);margin-top:2px}
+.ri{display:flex;align-items:center;gap:4px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 10px}
+.ri input{width:72px;background:transparent;border:none;font-size:15px;font-family:'SF Mono','Courier New',monospace;text-align:right;color:var(--text);outline:none;-webkit-appearance:none;appearance:none}
+.ri input::-webkit-inner-spin-button,.ri input::-webkit-outer-spin-button{-webkit-appearance:none}
+.ru{font-size:12px;color:var(--muted);white-space:nowrap}
+
+/* tax pills */
+.tax-pills{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.tp{font-size:11px;padding:5px 10px;border-radius:20px;border:1px solid var(--border2);cursor:pointer;background:var(--surface2);color:var(--muted);font-weight:600}
+.tp.on{background:var(--accent-bg);color:var(--accent-text);border-color:var(--accent)}
+
+/* scenario tabs */
+.stabs{display:flex;gap:6px;margin-bottom:10px}
+.stab{flex:1;padding:10px 4px;text-align:center;font-size:12px;font-weight:700;border-radius:var(--radius-sm);border:1px solid var(--border2);cursor:pointer;background:var(--surface2);color:var(--muted)}
+.stab.on{border-width:2px}
+.stab.bear.on{background:var(--bad-bg);color:var(--bad-text);border-color:var(--bad)}
+.stab.base.on{background:var(--accent-bg);color:var(--accent-text);border-color:var(--accent)}
+.stab.bull.on{background:var(--good-bg);color:var(--good-text);border-color:var(--good)}
+.stab-rate{display:block;font-size:10px;font-family:'SF Mono','Courier New',monospace;margin-top:2px;opacity:.8}
+
+/* result main */
+.rmain{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:10px}
+.rmain-label{font-size:11px;font-weight:700;color:var(--muted);margin-bottom:5px;letter-spacing:.5px}
+.rmain-val{font-size:32px;font-family:'SF Mono','Courier New',monospace;font-weight:600;line-height:1}
+.rmain-val.good{color:var(--good)}
+.rmain-val.bad{color:var(--bad)}
+.rmain-sub{font-size:11px;color:var(--muted);margin-top:6px}
+
+/* stat grid */
+.sg{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:10px}
+.sc{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px}
+.sc-l{font-size:10px;font-weight:700;color:var(--muted);margin-bottom:5px;letter-spacing:.5px}
+.sc-v{font-size:14px;font-family:'SF Mono','Courier New',monospace;font-weight:600;color:var(--text);word-break:break-all;line-height:1.2}
+.sc-v.hi{color:var(--good)}
+.sc-v.lo{color:var(--bad)}
+.sc-v.ac{color:var(--accent)}
+
+/* danger zone */
+.dz{border-radius:var(--radius);padding:14px 16px;margin-bottom:10px;border:2px solid}
+.dz.safe{background:var(--good-bg);border-color:var(--good)}
+.dz.warn{background:var(--warn-bg);border-color:var(--warn)}
+.dz.danger{background:var(--bad-bg);border-color:var(--bad)}
+.dz-title{font-size:12px;font-weight:700;margin-bottom:4px}
+.dz.safe .dz-title{color:var(--good-text)}
+.dz.warn .dz-title{color:var(--warn-text)}
+.dz.danger .dz-title{color:var(--bad-text)}
+.dz-be{font-family:'SF Mono','Courier New',monospace;font-size:22px;font-weight:600;margin:4px 0}
+.dz.safe .dz-be{color:var(--good)}
+.dz.warn .dz-be{color:var(--warn)}
+.dz.danger .dz-be{color:var(--bad)}
+.dz-body{font-size:12px;line-height:1.7}
+.dz.safe .dz-body{color:var(--good-text)}
+.dz.warn .dz-body{color:var(--warn-text)}
+.dz.danger .dz-body{color:var(--bad-text)}
+
+/* bar chart */
+.chart-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:10px}
+.chart-title{font-size:11px;font-weight:700;color:var(--muted);margin-bottom:12px;letter-spacing:.5px}
+.bar-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;border-radius:6px;padding:2px 4px}
+.bar-row.hl{background:var(--surface2)}
+.bar-rate{font-size:11px;font-family:'SF Mono','Courier New',monospace;color:var(--muted);width:28px;text-align:right;flex-shrink:0}
+.bar-track{flex:1;height:18px;background:var(--surface2);border-radius:4px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;transition:width .3s}
+.bar-val{font-size:11px;font-family:'SF Mono','Courier New',monospace;text-align:right;width:80px;flex-shrink:0;white-space:nowrap;font-weight:600}
+.bar-val.pos{color:var(--good)}
+.bar-val.neg{color:var(--bad)}
+
+/* history */
+.hist-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:10px}
+.hist-head{padding:12px 14px;background:var(--surface2);border-bottom:1px solid var(--border)}
+.hist-head-title{font-size:12px;font-weight:700;color:var(--text)}
+.hist-head-sub{font-size:11px;color:var(--muted);margin-top:2px;line-height:1.5}
+.hist-item{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;gap:12px;align-items:flex-start}
+.hist-item:last-child{border-bottom:none}
+.hist-item.dng{background:var(--bad-bg)}
+.hist-item.cur{background:var(--warn-bg)}
+.hist-badge{flex-shrink:0;width:44px;text-align:center}
+.hist-rate{font-size:17px;font-family:'SF Mono','Courier New',monospace;font-weight:700;color:var(--text);line-height:1}
+.hist-rate.dng{color:var(--bad)}
+.hist-rate.cur{color:var(--warn)}
+.hist-dot{width:6px;height:6px;border-radius:50%;margin:5px auto 0;background:var(--border2)}
+.hist-dot.safe{background:var(--good)}
+.hist-dot.warn{background:var(--warn)}
+.hist-dot.danger{background:var(--bad)}
+.hist-content{flex:1;min-width:0}
+.hist-period{font-size:10px;font-weight:700;color:var(--muted);margin-bottom:3px;letter-spacing:.5px}
+.hist-event{font-size:12px;font-weight:700;color:var(--text);margin-bottom:4px;line-height:1.4}
+.hist-desc{font-size:11px;color:var(--muted);line-height:1.7}
+.badges{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.badge{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700}
+.badge.safe{background:var(--good-bg);color:var(--good-text)}
+.badge.warn{background:var(--warn-bg);color:var(--warn-text)}
+.badge.danger{background:var(--bad-bg);color:var(--bad-text)}
+.badge.accent{background:var(--accent-bg);color:var(--accent-text)}
+
+/* detail */
+.dc{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:8px}
+.dg{font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--muted);padding:8px 14px;background:var(--surface2);border-bottom:1px solid var(--border);text-transform:uppercase}
+.di{padding:12px 14px;border-bottom:1px solid var(--border)}
+.di:last-child{border-bottom:none}
+.di-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.di-n{font-size:12px;font-weight:600;color:var(--text)}
+.di-v{font-size:13px;font-family:'SF Mono','Courier New',monospace;font-weight:600;white-space:nowrap}
+.di-v.good{color:var(--good)}
+.di-v.bad{color:var(--bad)}
+.di-v.ac{color:var(--accent)}
+.di-d{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.7}
+
+.note{font-size:11px;color:var(--muted);line-height:1.8;padding:14px;margin-bottom:10px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius)}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-badge">SIMULATOR</div>
+  <h1>住宅ローン<br>差額投資シミュレーター</h1>
+  <p>長期ローンの差額を運用した場合の資産シミュレーション</p>
+</div>
+
+<div class="page">
+
+<div class="sec">
+  <div class="sec-label">ローン設定</div>
+  <div class="grp">
+    <div class="row"><div class="rl">借入額<span>物件購入の融資額</span></div><div class="ri"><input id="loanAmount" type="number" inputmode="decimal" value="4000"><span class="ru">万円</span></div></div>
+    <div class="row"><div class="rl">金利<span>年率（現在の契約金利）</span></div><div class="ri"><input id="loanRate" type="number" inputmode="decimal" step="0.01" value="2"><span class="ru">%</span></div></div>
+    <div class="row"><div class="rl">短期ローン期間<span>比較用の返済年数</span></div><div class="ri"><input id="shortYears" type="number" inputmode="decimal" value="35"><span class="ru">年</span></div></div>
+    <div class="row"><div class="rl">長期ローン期間<span>実際に組む返済年数</span></div><div class="ri"><input id="longYears" type="number" inputmode="decimal" value="50"><span class="ru">年</span></div></div>
+    <div class="row"><div class="rl">投資期間<span>積立を続ける年数</span></div><div class="ri"><input id="investYears" type="number" inputmode="decimal" value="35"><span class="ru">年</span></div></div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-label">投資設定</div>
+  <div class="grp">
+    <div class="row" style="background:var(--accent-bg)">
+      <div class="rl">短期・長期の支払い差額<span>この金額が毎月の投資原資になります</span></div>
+      <div style="font-size:16px;font-family:&#39;SF Mono&#39;,&#39;Courier New&#39;,monospace;font-weight:700;color:var(--accent-text);white-space:nowrap" id="diffDisplay">2万6,989円/月</div>
+    </div>
+    <div class="row"><div class="rl">想定利回り（基本シナリオ）<span>悲観・楽観は自動計算</span></div><div class="ri"><input id="investmentRate" type="number" inputmode="decimal" step="0.1" value="7"><span class="ru">%</span></div></div>
+    <div class="row"><div class="rl">追加積立額<span>差額とは別に毎月上乗せする金額</span></div><div class="ri"><input id="extraMonthly" type="number" inputmode="decimal" value="0"><span class="ru">万円</span></div></div>
+    <div class="row"><div class="rl">税率<span>利益にかかる税金</span></div><div class="ri"><input id="taxRate" type="number" inputmode="decimal" step="0.001" value="0"><span class="ru">%</span></div></div>
+  </div>
+  <div class="tax-pills">
+    <button class="tp on" data-rate="0" onclick="setTax(this)">NISA　0%</button>
+    <button class="tp" data-rate="20.315" onclick="setTax(this)">特定口座　20.315%</button>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-label">為替設定（ドル建て投資の場合）</div>
+  <div class="grp" id="fxGroup">
+    <div class="row"><div class="rl">積立時の想定為替レート<span>毎月ドルに換える際のレート</span></div><div class="ri"><input id="fxEntry" type="number" inputmode="decimal" value="150"><span class="ru">円/ドル</span></div></div>
+    <div class="row"><div class="rl">出口時の想定為替レート<span>最終的に円に戻す際のレート</span></div><div class="ri"><input id="fxExit" type="number" inputmode="decimal" value="150"><span class="ru">円/ドル</span></div></div>
+  </div>
+  <div class="tax-pills">
+    <button class="tp" data-mode="jpy" onclick="setFxMode(this)">円建て投資（為替影響なし）</button>
+    <button class="tp on" data-mode="usd" onclick="setFxMode(this)">ドル建て投資（為替影響あり）</button>
+  </div>
+  <div id="fxNote" style="font-size:11px;color:var(--muted);margin-top:8px;line-height:1.7;padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm)">ドル建て投資モード：毎月の積立額を積立レート（150円）でドルに換えて投資し、35年後に出口レート（150円）で円に戻す想定です。円高になると円換算の資産が目減りします。</div>
+</div>
+
+<div class="sec">
+  <div class="sec-label">シナリオ比較</div>
+  <div class="stabs">
+    <button class="stab bear on" id="tab-bear" onclick="setTab(&#39;bear&#39;)">悲観<span class="stab-rate" id="rate-bear">3.0%</span></button>
+    <button class="stab base" id="tab-base" onclick="setTab(&#39;base&#39;)">基本<span class="stab-rate" id="rate-base">7.0%</span></button>
+    <button class="stab bull" id="tab-bull" onclick="setTab(&#39;bull&#39;)">楽観<span class="stab-rate" id="rate-bull">10.0%</span></button>
+  </div>
+
+  <div class="rmain">
+    <div class="rmain-label">残債完済後に手元に残るお金</div>
+    <div class="rmain-val good" id="netVal">+345万2,419円</div>
+    <div class="rmain-sub" id="netSub">投資評価額 1,984万9,440円 − ローン残債 1,639万7,020円</div>
+  </div>
+
+  <div class="sg">
+    <div class="sc"><div class="sc-l">短期 月返済額</div><div class="sc-v" id="shortPayment">13万2,505円</div></div>
+    <div class="sc"><div class="sc-l">長期 月返済額</div><div class="sc-v" id="longPayment">10万5,516円</div></div>
+    <div class="sc"><div class="sc-l">支払い差額（投資に回す）</div><div class="sc-v ac" id="loanDiff">2万6,989円</div></div>
+    <div class="sc"><div class="sc-l">月々の投資総額</div><div class="sc-v ac" id="monthlyDiff">2万6,989円</div></div>
+    <div class="sc"><div class="sc-l">投資元本（積立総額）</div><div class="sc-v" id="principal">1,133万5,320円</div></div>
+    <div class="sc"><div class="sc-l">投資利益（運用で増えた分）</div><div class="sc-v hi" id="profit">851万4,120円</div></div>
+    <div class="sc"><div class="sc-l">税引後 投資評価額</div><div class="sc-v hi" id="fvAfter">1,984万9,440円</div></div>
+    <div class="sc"><div class="sc-l">長期ローン残債</div><div class="sc-v lo" id="remainLoan">1,639万7,020円</div></div>
+    <div class="sc"><div class="sc-l">元本リターン倍率</div><div class="sc-v ac" id="multiplier">1.75倍</div></div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-label">損益分岐・デンジャーゾーン判定</div>
+  <div class="dz safe" id="dzBox">
+    <div class="dz-title" id="dzTitle">安全圏です</div>
+    <div class="dz-be" id="dzBe">損益分岐利回り：2.02%</div>
+    <div class="dz-body" id="dzBody">損益分岐利回りは 2.02% です。現在の想定利回り（7%）は 4.98% の余裕があります。多少の運用不振があっても黒字を維持できます。</div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-label">損益分岐ライン まとめ</div>
+  <div class="grp" id="bePanel">
+    <div class="row" style="flex-direction:column;align-items:flex-start;gap:6px">
+      <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.5px">利回り損益分岐</div>
+      <div style="font-size: 20px; font-family: &quot;SF Mono&quot;, &quot;Courier New&quot;, monospace; font-weight: 700; color: var(--good);" id="beLine">年率 2.02% 以上で黒字</div>
+      <div style="font-size:11px;color:var(--muted)" id="beLineDesc">現在の想定利回り 7% との差：+4.98%　余裕あり</div>
+    </div>
+    <div class="row" id="fxBeRow" style="flex-direction:column;align-items:flex-start;gap:6px">
+      <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.5px">為替損益分岐（出口レート）</div>
+      <div style="font-size: 20px; font-family: &quot;SF Mono&quot;, &quot;Courier New&quot;, monospace; font-weight: 700; color: var(--good);" id="fxBeLine">53.2円/ドル 以上で黒字</div>
+      <div style="font-size:11px;color:var(--muted)" id="fxBeLineDesc">現在の出口レート 150円 との差：+96.8円　余裕あり</div>
+    </div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-label">為替レート別シミュレーション</div>
+  <div class="chart-wrap" id="fxChartWrap">
+    <div class="chart-title">出口レート別 — 投資評価額の元本比較（積立レート <span id="fxChartLabel">150</span>円固定）</div>
+    <div id="fxBarChart"><div style="font-size:10px;color:var(--muted);margin-bottom:8px;line-height:1.6"><span style="color:#059669;font-weight:700">■</span> 元本超過（プラス）　<span style="color:#dc2626;font-weight:700">■</span> 元本割れ（マイナス）　下段「手取」は残債返済後の最終手元額</div><div class="bar-row"><span class="bar-rate" style="width:38px">60円</span><div class="bar-track"><div class="bar-fill" style="width:12.7%;background:#059669"></div></div><div style="text-align:right;min-width:120px;flex-shrink:0"><span class="bar-val pos">+714万319円</span><span style="font-size:10px;color:var(--muted);display:block;margin-top:1px">手取 +207万8,618円</span></div></div><div class="bar-row"><span class="bar-rate" style="width:38px">70円</span><div class="bar-track"><div class="bar-fill" style="width:18.1%;background:#059669"></div></div><div style="text-align:right;min-width:120px;flex-shrink:0"><span class="bar-val pos">+1,021万9,592円</span><span style="font-size:10px;color:var(--muted);display:block;margin-top:1px">手取 +515万7,891円</span></div></div><div class="bar-row"><span class="bar-rate" style="width:38px">80円</span><div class="bar-track"><div class="bar-fill" style="width:23.6%;background:#059669"></div></div><div style="text-align:right;min-width:120px;flex-shrink:0"><span class="bar-val pos">+1,329万8,865円</span><span style="font-size:10px;color:var(--muted);display:block;margin-top:1px">手取 +823万7,165円</span></div></div><div class="bar-row"><span class="bar-rate" style="width:38px">90円</span><div class="bar-track"><div class="bar-fill" style="width:29.0%;background:#059669"></div></div><div style="text-align:right;min-width:120px;flex-shrink:0"><span class="bar-val pos">+1,637万8,138円</span><span style="font-size:10px;color:var(--muted);display:block;margin-top:1px">手取 +1,131万6,438円</span></div></div><div class="bar-row"><span class="bar-rate" style="width:38px">100円</span><div class="bar-track"><div class="bar-fill" style="width:34.5%;background:#059669"></div></div><div style="text-align:right;min-width:120px;flex-shrink:0"><span class="bar-val pos">+1,945万7,411円</span><span style="font-size:10px;color:var(--muted);display:block;margin-top:1px">手取 +1,439万5,711円</span></div></div><div class="bar-row"><span class="bar-rate" style="width:38px">110円</span><div class="bar-track"><div class="bar-fill" style="width:40.0%;background:#059669"></div></div><div style="text-align:right;min-width:120px;flex-shrink:0"><span class="bar-val pos">+2,253万6,684円</span><span style="font-size:10px;color:var(--muted);display:block;margin-top:1px">手取 +1,747万4,984円</span></div></div><div class="bar-row"><span class="bar-rate" style="width:38px">120円</span><div class="bar-track"><div class="bar-fill" style="width:45.4%;background:#059669"></div></div><div style="text-align:right;min-width:120px;flex-shrink:0"><span class="bar-val pos">+2,561万5,958円</span><span style="font-size:10px;color:var(--muted);display:block;margin-top:1px">手取 +2,055万4,257円</span></div></div><div class="bar-row"><span class="bar-rate" style="width:38px">130円</span><div class="bar-track"><div class="bar-fill" style="width:50.9%;background:#059669"></div></div><div style="text-align:right;min-width:120px;flex-shrink:0"><span class="bar-val pos">+2,869万5,231円</span><span style="font-size:10px;color:var(--muted);display:block;margin-top:1px">手取 +2,363万3,530円</span></div></div><div class="bar-row"><span class="bar-rate" style="width:38px">140円</span><div class="bar-track"><div class="bar-fill" style="width:56.3%;background:#059669"></div></div><div style="text-align:right;min-width:120px;flex-shrink:0"><span class="bar-val pos">+3,177万4,504円</span><span style="font-size:10px;color:var(--muted);display:block;margin-top:1px">手取 +2,671万2,803円</span></div></div><div class="bar-row hl"><span class="bar-rate" style="width:38px">150円 ◀</span><div class="bar-track"><div class="bar-fill" style="width:61.8%;background:#059669"></div></div><div style="text-align:right;min-width:120px;flex-shrink:0"><span class="bar-val pos">+3,485万3,777円</span><span style="font-size:10px;color:var(--muted);display:block;margin-top:1px">手取 +2,979万2,076円</span></div></div><div class="bar-row"><span class="bar-rate" style="width:38px">160円</span><div class="bar-track"><div class="bar-fill" style="width:67.2%;background:#059669"></div></div><div style="text-align:right;min-width:120px;flex-shrink:0"><span class="bar-val pos">+3,793万3,050円</span><span style="font-size:10px;color:var(--muted);display:block;margin-top:1px">手取 +3,287万1,349円</span></div></div><div class="bar-row"><span class="bar-rate" style="width:38px">170円</span><div class="bar-track"><div class="bar-fill" style="width:72.7%;background:#059669"></div></div><div style="text-align:right;min-width:120px;flex-shrink:0"><span class="bar-val pos">+4,101万2,323円</span><span style="font-size:10px;color:var(--muted);display:block;margin-top:1px">手取 +3,595万622円</span></div></div><div class="bar-row"><span class="bar-rate" style="width:38px">180円</span><div class="bar-track"><div class="bar-fill" style="width:78.2%;background:#059669"></div></div><div style="text-align:right;min-width:120px;flex-shrink:0"><span class="bar-val pos">+4,409万1,596円</span><span style="font-size:10px;color:var(--muted);display:block;margin-top:1px">手取 +3,902万9,896円</span></div></div><div class="bar-row"><span class="bar-rate" style="width:38px">190円</span><div class="bar-track"><div class="bar-fill" style="width:83.6%;background:#059669"></div></div><div style="text-align:right;min-width:120px;flex-shrink:0"><span class="bar-val pos">+4,717万869円</span><span style="font-size:10px;color:var(--muted);display:block;margin-top:1px">手取 +4,210万9,169円</span></div></div><div class="bar-row"><span class="bar-rate" style="width:38px">200円</span><div class="bar-track"><div class="bar-fill" style="width:89.1%;background:#059669"></div></div><div style="text-align:right;min-width:120px;flex-shrink:0"><span class="bar-val pos">+5,025万142円</span><span style="font-size:10px;color:var(--muted);display:block;margin-top:1px">手取 +4,518万8,442円</span></div></div><div class="bar-row"><span class="bar-rate" style="width:38px">210円</span><div class="bar-track"><div class="bar-fill" style="width:94.5%;background:#059669"></div></div><div style="text-align:right;min-width:120px;flex-shrink:0"><span class="bar-val pos">+5,332万9,415円</span><span style="font-size:10px;color:var(--muted);display:block;margin-top:1px">手取 +4,826万7,715円</span></div></div><div class="bar-row"><span class="bar-rate" style="width:38px">220円</span><div class="bar-track"><div class="bar-fill" style="width:100.0%;background:#059669"></div></div><div style="text-align:right;min-width:120px;flex-shrink:0"><span class="bar-val pos">+5,640万8,689円</span><span style="font-size:10px;color:var(--muted);display:block;margin-top:1px">手取 +5,134万6,988円</span></div></div></div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-label">利回り別シミュレーション</div>
+  <div class="chart-wrap">
+    <div class="chart-title">残債返済後の手取り（1〜12%）</div>
+    <div id="barChart"><div class="bar-row"><span class="bar-rate">1%</span><div class="bar-track"><div class="bar-fill" style="width:2.2%;background:#dc2626"></div></div><span class="bar-val neg">−284万2,933円</span></div><div class="bar-row"><span class="bar-rate">2%</span><div class="bar-track"><div class="bar-fill" style="width:0.0%;background:#dc2626"></div></div><span class="bar-val neg">−5万7,603円</span></div><div class="bar-row"><span class="bar-rate">3%</span><div class="bar-track"><div class="bar-fill" style="width:2.6%;background:#059669"></div></div><span class="bar-val pos">+345万2,419円</span></div><div class="bar-row"><span class="bar-rate">4%</span><div class="bar-track"><div class="bar-fill" style="width:6.0%;background:#059669"></div></div><span class="bar-val pos">+789万668円</span></div><div class="bar-row"><span class="bar-rate">5%</span><div class="bar-track"><div class="bar-fill" style="width:10.3%;background:#059669"></div></div><span class="bar-val pos">+1,351万9,128円</span></div><div class="bar-row"><span class="bar-rate">6%</span><div class="bar-track"><div class="bar-fill" style="width:15.8%;background:#059669"></div></div><span class="bar-val pos">+2,067万4,980円</span></div><div class="bar-row hl"><span class="bar-rate">7% ◀</span><div class="bar-track"><div class="bar-fill" style="width:22.8%;background:#059669"></div></div><span class="bar-val pos">+2,979万2,076円</span></div><div class="bar-row"><span class="bar-rate">8%</span><div class="bar-track"><div class="bar-fill" style="width:31.6%;background:#059669"></div></div><span class="bar-val pos">+4,142万8,428円</span></div><div class="bar-row"><span class="bar-rate">9%</span><div class="bar-track"><div class="bar-fill" style="width:43.0%;background:#059669"></div></div><span class="bar-val pos">+5,630万1,368円</span></div><div class="bar-row"><span class="bar-rate">10%</span><div class="bar-track"><div class="bar-fill" style="width:57.5%;background:#059669"></div></div><span class="bar-val pos">+7,533万2,462円</span></div><div class="bar-row"><span class="bar-rate">11%</span><div class="bar-track"><div class="bar-fill" style="width:76.1%;background:#059669"></div></div><span class="bar-val pos">+9,970万4,801円</span></div><div class="bar-row"><span class="bar-rate">12%</span><div class="bar-track"><div class="bar-fill" style="width:100.0%;background:#059669"></div></div><span class="bar-val pos">+1億3,093万円</span></div></div>
+  </div>
+</div>
+
+<div class="sec" id="fxHistSec">
+  <div class="sec-label">ドル円レート　歴史と社会情勢（10円刻み）</div>
+  <div class="hist-wrap" id="fxHistWrap"><div class="hist-head"><div class="hist-head-title">為替レート水準別の歴史的背景</div><div class="hist-head-sub">赤背景 = 損益分岐レート（53円）より円高で赤字リスク<br>黄背景 = 現在の出口レート（150円）に近い水準</div></div><div class="hist-item "><div class="hist-badge"><div class="hist-rate " style="font-size:13px">60〜69円</div><div class="hist-dot danger"></div></div><div class="hist-content"><div class="hist-period">2011年10月31日（史上最高値：75円32銭）</div><div class="hist-event">東日本大震災・超円高の絶頂</div><div class="hist-desc">リーマンショック後の円高が継続し、2011年3月の東日本大震災後も円高が加速。同年10月31日に1ドル=75円32銭の戦後最高値を記録。輸出企業は壊滅的打撃を受け、日本政府・日銀が大規模為替介入を実施。</div><div class="badges"><span class="badge danger">超円高（歴史的極値）</span></div></div></div><div class="hist-item "><div class="hist-badge"><div class="hist-rate " style="font-size:13px">70〜79円</div><div class="hist-dot danger"></div></div><div class="hist-content"><div class="hist-period">2011〜2012年（最高値圏）</div><div class="hist-event">歴史的超円高・デフレ深刻化</div><div class="hist-desc">東日本大震災の復興需要による円買い、欧州債務危機によるリスク回避でさらに円高が進行。輸出産業が空洞化し、企業の海外移転が加速。日銀は量的緩和を強化するも効果限定的だった時期。</div><div class="badges"><span class="badge danger">超円高ゾーン</span></div></div></div><div class="hist-item "><div class="hist-badge"><div class="hist-rate " style="font-size:13px">80〜89円</div><div class="hist-dot warn"></div></div><div class="hist-content"><div class="hist-period">2010〜2013年・2011年前後</div><div class="hist-event">リーマンショック後の円高定着期</div><div class="hist-desc">2008年リーマンショック後の世界的リスク回避で急速に円高進行。80円台が「ニューノーマル」となり輸出企業の採算ラインを大幅に下回った。2013年のアベノミクス・日銀異次元緩和で転換点を迎えた。</div><div class="badges"><span class="badge warn">円高ゾーン</span></div></div></div><div class="hist-item "><div class="hist-badge"><div class="hist-rate " style="font-size:13px">90〜99円</div><div class="hist-dot warn"></div></div><div class="hist-content"><div class="hist-period">2009〜2010年・2013年</div><div class="hist-event">リーマン後の回復期・アベノミクス前夜</div><div class="hist-desc">リーマンショックから90円台に定着。2012年末の安倍政権誕生・アベノミクス期待で円安転換が始まり、2013年には100円台を突破。90円台は「円高と円安の境目」として意識された水準。</div><div class="badges"><span class="badge warn">やや円高</span></div></div></div><div class="hist-item "><div class="hist-badge"><div class="hist-rate " style="font-size:13px">100〜109円</div><div class="hist-dot safe"></div></div><div class="hist-content"><div class="hist-period">2013〜2016年・2019〜2021年</div><div class="hist-event">アベノミクス・量的緩和による円安定着</div><div class="hist-desc">2013年の日銀異次元緩和で100円台を回復。その後2014〜2015年には120円台まで円安が進む。コロナ禍（2020年）では一時的に円高になるも、概ね100〜110円レンジで安定推移していた時期。</div><div class="badges"><span class="badge safe">比較的安定</span></div></div></div><div class="hist-item "><div class="hist-badge"><div class="hist-rate " style="font-size:13px">110〜119円</div><div class="hist-dot safe"></div></div><div class="hist-content"><div class="hist-period">2014〜2015年・2017〜2018年</div><div class="hist-event">円安定着・日米金利差拡大期</div><div class="hist-desc">アベノミクスの黒田緩和で日米金利差が拡大し円安が進行。トランプ政権発足（2017年）後の米国景気拡大でドル高が続き、輸出企業には追い風の時期。この水準が「適正レート」と見なされた。</div><div class="badges"><span class="badge safe">安定ゾーン</span></div></div></div><div class="hist-item "><div class="hist-badge"><div class="hist-rate " style="font-size:13px">120〜129円</div><div class="hist-dot safe"></div></div><div class="hist-content"><div class="hist-period">2014〜2015年・2022年前半</div><div class="hist-event">プラザ合意後水準・円安加速の入口</div><div class="hist-desc">1985年プラザ合意後に240円台から円高が進んだ結果、1989年には120〜140円台に。2022年ロシアのウクライナ侵攻・米国利上げ開始で急速な円安が進行し再びこの水準に。約7年ぶりの円安として注目された。</div><div class="badges"><span class="badge safe">やや円安</span></div></div></div><div class="hist-item "><div class="hist-badge"><div class="hist-rate " style="font-size:13px">130〜139円</div><div class="hist-dot warn"></div></div><div class="hist-content"><div class="hist-period">2022年4〜6月</div><div class="hist-event">日米金利差拡大・円安加速フェーズ</div><div class="hist-desc">2022年、米国が急速な利上げを開始する一方、日銀は緩和継続。急激な日米金利差拡大により円売りが加速。政府・日銀は「急激な変動は望ましくない」と円安けん制発言を繰り返した時期。</div><div class="badges"><span class="badge warn">円安警戒ゾーン</span></div></div></div><div class="hist-item "><div class="hist-badge"><div class="hist-rate " style="font-size:13px">140〜149円</div><div class="hist-dot warn"></div></div><div class="hist-content"><div class="hist-period">2022年8〜9月・2023〜2024年</div><div class="hist-event">政府・日銀が為替介入を実施</div><div class="hist-desc">2022年9月、1998年以来約24年ぶりに政府・日銀が円買い介入を実施（総額約9兆円規模）。輸入物価高騰が家計を直撃し社会問題化。2023〜2024年も140円台が常態化し、実質的な「円安常態」が定着。</div><div class="badges"><span class="badge warn">要注意ゾーン</span></div></div></div><div class="hist-item cur"><div class="hist-badge"><div class="hist-rate cur" style="font-size:13px">150〜159円</div><div class="hist-dot danger"></div></div><div class="hist-content"><div class="hist-period">2022年10月・2023〜2025年</div><div class="hist-event">32年ぶりの円安水準・追加介入</div><div class="hist-desc">2022年10月、1990年以来32年ぶりに150円台を突破。政府・日銀は追加の為替介入を実施。輸入コスト急騰でエネルギー・食料品価格が高騰。2024年の日銀利上げ転換後も150円台が続き「新たな標準レート」として定着しつつある。</div><div class="badges"><span class="badge danger">円安デンジャーゾーン</span><span class="badge accent">現在の出口レートに近い</span></div></div></div><div class="hist-item "><div class="hist-badge"><div class="hist-rate " style="font-size:13px">160〜169円</div><div class="hist-dot danger"></div></div><div class="hist-content"><div class="hist-period">1990年4月・2024年6〜7月</div><div class="hist-event">バブル期以来の水準・34年ぶり円安</div><div class="hist-desc">2024年4〜7月、1990年のバブル期以来34年ぶりに160円台に突入。投機的な円売りが加速し政府は約5.5兆円規模の介入を実施。国民の購買力が大幅に低下し、「円の実力低下」が構造的な問題として議論された。</div><div class="badges"><span class="badge danger">歴史的円安水準</span></div></div></div><div class="hist-item "><div class="hist-badge"><div class="hist-rate " style="font-size:13px">170〜179円</div><div class="hist-dot danger"></div></div><div class="hist-content"><div class="hist-period">（未到達：1990年以降最高は160円台）</div><div class="hist-event">仮に到達した場合 — バブル期超えの超円安</div><div class="hist-desc">1990年以降、このレベルへの到達はない。1985年プラザ合意前の240円台から円高が進む中で通過したレート。現代での到達は日本の財政悪化・ハイパーインフレ・日銀信認失墜などの極端なシナリオを示唆する。</div><div class="badges"><span class="badge danger">未経験の超円安</span></div></div></div></div>
+</div>
+
+<div class="sec">
+  <div class="sec-label">日本の住宅ローン金利　歴史と社会情勢</div>
+  <div class="hist-wrap" id="histWrap"><div class="hist-head"><div class="hist-head-title">金利水準別の歴史的背景</div><div class="hist-head-sub">赤背景 = 損益分岐利回りを超える歴史的金利水準<br>黄背景 = 現在の契約金利に近い水準</div></div><div class="hist-item "><div class="hist-badge"><div class="hist-rate ">1%</div><div class="hist-dot safe"></div></div><div class="hist-content"><div class="hist-period">2016年〜2024年</div><div class="hist-event">マイナス金利政策・超低金利時代</div><div class="hist-desc">日銀がマイナス金利政策（−0.1%）を導入。変動金利は0.5%以下に。コロナ禍も重なり超低金利が長期継続。2024年3月にマイナス金利を解除し上昇局面へ転換。</div><div class="badges"><span class="badge safe">安全圏</span></div></div></div><div class="hist-item cur"><div class="hist-badge"><div class="hist-rate cur">2%</div><div class="hist-dot safe"></div></div><div class="hist-content"><div class="hist-period">2000年代〜2016年</div><div class="hist-event">ゼロ金利・量的緩和の定着</div><div class="hist-desc">1999年のゼロ金利政策、2001年の量的緩和を経て金利は1〜2%台が常識に。リーマンショック（2008年）後も緩和継続。変動金利の店頭金利は2%台半ばで推移。</div><div class="badges"><span class="badge safe">安全圏</span><span class="badge accent">現在の契約金利に近い</span></div></div></div><div class="hist-item dng"><div class="hist-badge"><div class="hist-rate dng">3%</div><div class="hist-dot safe"></div></div><div class="hist-content"><div class="hist-period">1995〜1999年</div><div class="hist-event">バブル崩壊後の景気対策・金利引き下げ</div><div class="hist-desc">1991年のバブル崩壊後、景気対策として段階的に金利を引き下げ。1995年に3%台まで低下。1998年10月には住宅金融公庫が史上最低金利2.0%を記録。</div><div class="badges"><span class="badge safe">比較的安全</span><span class="badge danger">損益分岐を超える水準</span></div></div></div><div class="hist-item dng"><div class="hist-badge"><div class="hist-rate dng">4%</div><div class="hist-dot warn"></div></div><div class="hist-content"><div class="hist-period">1992〜1995年</div><div class="hist-event">バブル崩壊直後の過渡期</div><div class="hist-desc">バブル崩壊直後で不動産・株が暴落。「失われた30年」の始まり。金利は高止まりから緩やかに低下へ転換した時期で、住宅ローン金利は4〜5%台で推移。</div><div class="badges"><span class="badge warn">注意ゾーン</span><span class="badge danger">損益分岐を超える水準</span></div></div></div><div class="hist-item dng"><div class="hist-badge"><div class="hist-rate dng">5%</div><div class="hist-dot warn"></div></div><div class="hist-content"><div class="hist-period">1988〜1991年（バブル末期）</div><div class="hist-event">バブル経済・資産価格高騰期</div><div class="hist-desc">株・不動産が急騰しバブル経済が頂点に。日銀が1989〜1991年にかけて利上げを実施しバブル崩壊を招いた。この時期の住宅ローン金利は5〜8%台。</div><div class="badges"><span class="badge warn">注意ゾーン</span><span class="badge danger">損益分岐を超える水準</span></div></div></div><div class="hist-item dng"><div class="hist-badge"><div class="hist-rate dng">6%</div><div class="hist-dot danger"></div></div><div class="hist-content"><div class="hist-period">1983〜1988年（バブル形成期）</div><div class="hist-event">プラザ合意・内需拡大・バブルの土台</div><div class="hist-desc">1985年プラザ合意で円高ドル安が加速。輸出産業が打撃を受け、内需拡大策として低金利政策が採られバブル形成の土台に。住宅ローン金利は6〜7%台。</div><div class="badges"><span class="badge danger">デンジャーゾーン</span><span class="badge danger">損益分岐を超える水準</span></div></div></div><div class="hist-item dng"><div class="hist-badge"><div class="hist-rate dng">7%</div><div class="hist-dot danger"></div></div><div class="hist-content"><div class="hist-period">1980〜1983年</div><div class="hist-event">第二次オイルショック後の高金利期</div><div class="hist-desc">1979年イラン革命による第二次オイルショックで物価高騰。日銀は公定歩合を9%まで引き上げ。「ロクイチ国債」暴落も発生。住宅ローン金利は6〜7%台。</div><div class="badges"><span class="badge danger">デンジャーゾーン</span><span class="badge danger">損益分岐を超える水準</span></div></div></div><div class="hist-item dng"><div class="hist-badge"><div class="hist-rate dng">8%</div><div class="hist-dot danger"></div></div><div class="hist-content"><div class="hist-period">1989〜1991年（ピーク）</div><div class="hist-event">バブル絶頂期の金利最高水準</div><div class="hist-desc">1990年、変動型住宅ローン金利が年8.5%を記録（主要都市銀行中央値）。バブル崩壊後に急速低下。過去30年でこの水準を再び超えたことはない。</div><div class="badges"><span class="badge danger">デンジャーゾーン</span><span class="badge danger">損益分岐を超える水準</span></div></div></div><div class="hist-item dng"><div class="hist-badge"><div class="hist-rate dng">9%</div><div class="hist-dot danger"></div></div><div class="hist-content"><div class="hist-period">1973〜1975年</div><div class="hist-event">第一次オイルショック・狂乱物価</div><div class="hist-desc">第四次中東戦争をきっかけに石油価格が4倍に急騰。消費者物価が前年比23%上昇し「狂乱物価」と呼ばれた。公定歩合は9%まで引き上げ。戦後初のマイナス成長を記録。</div><div class="badges"><span class="badge danger">デンジャーゾーン</span><span class="badge danger">損益分岐を超える水準</span></div></div></div><div class="hist-item dng"><div class="hist-badge"><div class="hist-rate dng">10%</div><div class="hist-dot danger"></div></div><div class="hist-content"><div class="hist-period">1950年代後半〜1970年代前半</div><div class="hist-event">高度経済成長期・慢性的高金利</div><div class="hist-desc">戦後復興から高度経済成長期にかけて金利は10%以上が当たり前。現在とは全く異なる経済・金融環境で、住宅購入は一部の富裕層のみが可能だった時代。</div><div class="badges"><span class="badge danger">デンジャーゾーン</span><span class="badge danger">損益分岐を超える水準</span></div></div></div></div>
+</div>
+
+<div class="sec">
+  <div class="sec-label">詳細内訳と解説</div>
+  <div id="detailArea"><div class="dc"><div class="dg">ローンの比較</div><div class="di"><div class="di-top"><span class="di-n">短期 月返済額</span><span class="di-v ">13万2,505円</span></div><div class="di-d">借入4,000万円を35年で返す場合の毎月の支払い。</div></div><div class="di"><div class="di-top"><span class="di-n">長期 月返済額</span><span class="di-v ">10万5,516円</span></div><div class="di-d">借入4,000万円を50年で返す場合の毎月の支払い。期間が長いほど月々は楽になります。</div></div><div class="di"><div class="di-top"><span class="di-n">月々の差額（ローン短期−長期）</span><span class="di-v ac">2万6,989円</span></div><div class="di-d">短期と長期の返済差額。長期ローンにした分、この金額が浮きます。</div></div><div class="di"><div class="di-top"><span class="di-n">月々の追加積立額</span><span class="di-v ac">0円</span></div><div class="di-d">追加積立なし。差額のみを投資に回します。</div></div><div class="di"><div class="di-top"><span class="di-n">月々の投資総額</span><span class="di-v ac">2万6,989円</span></div><div class="di-d">差額＋追加積立の合計。この金額を毎月コツコツ積み立てます。</div></div><div class="di"><div class="di-top"><span class="di-n">短期 払う総利息</span><span class="di-v bad">1,565万2,145円</span></div><div class="di-d">35年間で銀行に支払う利息の合計。</div></div><div class="di"><div class="di-top"><span class="di-n">長期 払う総利息</span><span class="di-v bad">2,330万9,751円</span></div><div class="di-d">長期は月々が楽な代わりに総利息が増えます。</div></div></div><div class="dc"><div class="dg">投資の成果（利回り 3%シナリオ）</div><div class="di"><div class="di-top"><span class="di-n">投資元本（積立した合計）</span><span class="di-v ">1,133万5,320円</span></div><div class="di-d">毎月2万6,989円×35年間の自己資金合計。</div></div><div class="di"><div class="di-top"><span class="di-n">投資利益（複利で増えた分）</span><span class="di-v good">851万4,120円</span></div><div class="di-d">元本が年率3%で増えた結果の上乗せ分。複利効果でお金がお金を呼びます。元本保証ではありません。</div></div><div class="di"><div class="di-top"><span class="di-n">税金（利益への課税）</span><span class="di-v bad">0円</span></div><div class="di-d">NISA口座のため非課税。利益をまるごと受け取れます。</div></div><div class="di"><div class="di-top"><span class="di-n">税引後 投資評価額（円建て換算）</span><span class="di-v good">1,984万9,440円</span></div><div class="di-d">為替影響なしの場合の円建て評価額。比較用。</div></div><div class="di"><div class="di-top"><span class="di-n">税引後 投資評価額（為替反映）</span><span class="di-v good">1,984万9,440円</span></div><div class="di-d">ドル建て運用後、出口レート150円で円転した実際の評価額。</div></div><div class="di"><div class="di-top"><span class="di-n">為替による損益影響</span><span class="di-v good">+0.0%（0円）</span></div><div class="di-d">積立レート150円 → 出口レート150円の為替変動による円換算の増減。円高なら目減り、円安なら増加。</div></div><div class="di"><div class="di-top"><span class="di-n">元本に対するリターン倍率</span><span class="di-v ac">1.75倍</span></div><div class="di-d">投資した円建て元本に対し、為替反映後の最終評価額が何倍になったか。</div></div></div><div class="dc"><div class="dg">最終的な手元資産</div><div class="di"><div class="di-top"><span class="di-n">長期ローン残債（35年後）</span><span class="di-v bad">1,639万7,020円</span></div><div class="di-d">投資終了時点でまだ残っているローン。この分は返済が必要です。</div></div><div class="di"><div class="di-top"><span class="di-n">残債を返したあとに残るお金</span><span class="di-v good">+345万2,419円</span></div><div class="di-d">投資評価額からローン残債を一括返済しても345万2,419円が残ります。</div></div></div></div>
+</div>
+
+<div class="note">
+  ※ 元利均等返済・ボーナス返済なし。<br>
+  ※ 投資は毎月末積立として複利計算。<br>
+  ※ 投資利回りは税引前の名目リターン。元本保証ではありません。<br>
+  ※ 歴史データは変動型住宅ローン金利（主要都市銀行）を参考にしています。
+</div>
+
+</div><!-- /page -->
+
+<script>
+(function(){
+var currentTab='bear', cache={};
+
+var FX_HISTORY=[
+  {rate:60, range:'60〜69円', period:'2011年10月31日（史上最高値：75円32銭）',
+   label:'東日本大震災・超円高の絶頂',
+   event:'リーマンショック後の円高が継続し、2011年3月の東日本大震災後も円高が加速。同年10月31日に1ドル=75円32銭の戦後最高値を記録。輸出企業は壊滅的打撃を受け、日本政府・日銀が大規模為替介入を実施。',
+   status:'danger', sl:'超円高（歴史的極値）'},
+  {rate:70, range:'70〜79円', period:'2011〜2012年（最高値圏）',
+   label:'歴史的超円高・デフレ深刻化',
+   event:'東日本大震災の復興需要による円買い、欧州債務危機によるリスク回避でさらに円高が進行。輸出産業が空洞化し、企業の海外移転が加速。日銀は量的緩和を強化するも効果限定的だった時期。',
+   status:'danger', sl:'超円高ゾーン'},
+  {rate:80, range:'80〜89円', period:'2010〜2013年・2011年前後',
+   label:'リーマンショック後の円高定着期',
+   event:'2008年リーマンショック後の世界的リスク回避で急速に円高進行。80円台が「ニューノーマル」となり輸出企業の採算ラインを大幅に下回った。2013年のアベノミクス・日銀異次元緩和で転換点を迎えた。',
+   status:'warn', sl:'円高ゾーン'},
+  {rate:90, range:'90〜99円', period:'2009〜2010年・2013年',
+   label:'リーマン後の回復期・アベノミクス前夜',
+   event:'リーマンショックから90円台に定着。2012年末の安倍政権誕生・アベノミクス期待で円安転換が始まり、2013年には100円台を突破。90円台は「円高と円安の境目」として意識された水準。',
+   status:'warn', sl:'やや円高'},
+  {rate:100, range:'100〜109円', period:'2013〜2016年・2019〜2021年',
+   label:'アベノミクス・量的緩和による円安定着',
+   event:'2013年の日銀異次元緩和で100円台を回復。その後2014〜2015年には120円台まで円安が進む。コロナ禍（2020年）では一時的に円高になるも、概ね100〜110円レンジで安定推移していた時期。',
+   status:'safe', sl:'比較的安定'},
+  {rate:110, range:'110〜119円', period:'2014〜2015年・2017〜2018年',
+   label:'円安定着・日米金利差拡大期',
+   event:'アベノミクスの黒田緩和で日米金利差が拡大し円安が進行。トランプ政権発足（2017年）後の米国景気拡大でドル高が続き、輸出企業には追い風の時期。この水準が「適正レート」と見なされた。',
+   status:'safe', sl:'安定ゾーン'},
+  {rate:120, range:'120〜129円', period:'2014〜2015年・2022年前半',
+   label:'プラザ合意後水準・円安加速の入口',
+   event:'1985年プラザ合意後に240円台から円高が進んだ結果、1989年には120〜140円台に。2022年ロシアのウクライナ侵攻・米国利上げ開始で急速な円安が進行し再びこの水準に。約7年ぶりの円安として注目された。',
+   status:'safe', sl:'やや円安'},
+  {rate:130, range:'130〜139円', period:'2022年4〜6月',
+   label:'日米金利差拡大・円安加速フェーズ',
+   event:'2022年、米国が急速な利上げを開始する一方、日銀は緩和継続。急激な日米金利差拡大により円売りが加速。政府・日銀は「急激な変動は望ましくない」と円安けん制発言を繰り返した時期。',
+   status:'warn', sl:'円安警戒ゾーン'},
+  {rate:140, range:'140〜149円', period:'2022年8〜9月・2023〜2024年',
+   label:'政府・日銀が為替介入を実施',
+   event:'2022年9月、1998年以来約24年ぶりに政府・日銀が円買い介入を実施（総額約9兆円規模）。輸入物価高騰が家計を直撃し社会問題化。2023〜2024年も140円台が常態化し、実質的な「円安常態」が定着。',
+   status:'warn', sl:'要注意ゾーン'},
+  {rate:150, range:'150〜159円', period:'2022年10月・2023〜2025年',
+   label:'32年ぶりの円安水準・追加介入',
+   event:'2022年10月、1990年以来32年ぶりに150円台を突破。政府・日銀は追加の為替介入を実施。輸入コスト急騰でエネルギー・食料品価格が高騰。2024年の日銀利上げ転換後も150円台が続き「新たな標準レート」として定着しつつある。',
+   status:'danger', sl:'円安デンジャーゾーン'},
+  {rate:160, range:'160〜169円', period:'1990年4月・2024年6〜7月',
+   label:'バブル期以来の水準・34年ぶり円安',
+   event:'2024年4〜7月、1990年のバブル期以来34年ぶりに160円台に突入。投機的な円売りが加速し政府は約5.5兆円規模の介入を実施。国民の購買力が大幅に低下し、「円の実力低下」が構造的な問題として議論された。',
+   status:'danger', sl:'歴史的円安水準'},
+  {rate:170, range:'170〜179円', period:'（未到達：1990年以降最高は160円台）',
+   label:'仮に到達した場合 — バブル期超えの超円安',
+   event:'1990年以降、このレベルへの到達はない。1985年プラザ合意前の240円台から円高が進む中で通過したレート。現代での到達は日本の財政悪化・ハイパーインフレ・日銀信認失墜などの極端なシナリオを示唆する。',
+   status:'danger', sl:'未経験の超円安'},
+];
+
+var HISTORY=[
+  {rate:1,period:'2016年〜2024年',label:'マイナス金利政策・超低金利時代',
+   event:'日銀がマイナス金利政策（−0.1%）を導入。変動金利は0.5%以下に。コロナ禍も重なり超低金利が長期継続。2024年3月にマイナス金利を解除し上昇局面へ転換。',
+   status:'safe',sl:'安全圏'},
+  {rate:2,period:'2000年代〜2016年',label:'ゼロ金利・量的緩和の定着',
+   event:'1999年のゼロ金利政策、2001年の量的緩和を経て金利は1〜2%台が常識に。リーマンショック（2008年）後も緩和継続。変動金利の店頭金利は2%台半ばで推移。',
+   status:'safe',sl:'安全圏'},
+  {rate:3,period:'1995〜1999年',label:'バブル崩壊後の景気対策・金利引き下げ',
+   event:'1991年のバブル崩壊後、景気対策として段階的に金利を引き下げ。1995年に3%台まで低下。1998年10月には住宅金融公庫が史上最低金利2.0%を記録。',
+   status:'safe',sl:'比較的安全'},
+  {rate:4,period:'1992〜1995年',label:'バブル崩壊直後の過渡期',
+   event:'バブル崩壊直後で不動産・株が暴落。「失われた30年」の始まり。金利は高止まりから緩やかに低下へ転換した時期で、住宅ローン金利は4〜5%台で推移。',
+   status:'warn',sl:'注意ゾーン'},
+  {rate:5,period:'1988〜1991年（バブル末期）',label:'バブル経済・資産価格高騰期',
+   event:'株・不動産が急騰しバブル経済が頂点に。日銀が1989〜1991年にかけて利上げを実施しバブル崩壊を招いた。この時期の住宅ローン金利は5〜8%台。',
+   status:'warn',sl:'注意ゾーン'},
+  {rate:6,period:'1983〜1988年（バブル形成期）',label:'プラザ合意・内需拡大・バブルの土台',
+   event:'1985年プラザ合意で円高ドル安が加速。輸出産業が打撃を受け、内需拡大策として低金利政策が採られバブル形成の土台に。住宅ローン金利は6〜7%台。',
+   status:'danger',sl:'デンジャーゾーン'},
+  {rate:7,period:'1980〜1983年',label:'第二次オイルショック後の高金利期',
+   event:'1979年イラン革命による第二次オイルショックで物価高騰。日銀は公定歩合を9%まで引き上げ。「ロクイチ国債」暴落も発生。住宅ローン金利は6〜7%台。',
+   status:'danger',sl:'デンジャーゾーン'},
+  {rate:8,period:'1989〜1991年（ピーク）',label:'バブル絶頂期の金利最高水準',
+   event:'1990年、変動型住宅ローン金利が年8.5%を記録（主要都市銀行中央値）。バブル崩壊後に急速低下。過去30年でこの水準を再び超えたことはない。',
+   status:'danger',sl:'デンジャーゾーン'},
+  {rate:9,period:'1973〜1975年',label:'第一次オイルショック・狂乱物価',
+   event:'第四次中東戦争をきっかけに石油価格が4倍に急騰。消費者物価が前年比23%上昇し「狂乱物価」と呼ばれた。公定歩合は9%まで引き上げ。戦後初のマイナス成長を記録。',
+   status:'danger',sl:'デンジャーゾーン'},
+  {rate:10,period:'1950年代後半〜1970年代前半',label:'高度経済成長期・慢性的高金利',
+   event:'戦後復興から高度経済成長期にかけて金利は10%以上が当たり前。現在とは全く異なる経済・金融環境で、住宅購入は一部の富裕層のみが可能だった時代。',
+   status:'danger',sl:'デンジャーゾーン'},
+];
+
+function yen(v){
+  if(!isFinite(v))return'—';
+  var s=v<0?'−':'',a=Math.abs(Math.round(v));
+  if(a>=100000000){var ok=Math.floor(a/100000000),mn=Math.floor((a%100000000)/10000);return s+ok+'億'+(mn>0?mn.toLocaleString('ja-JP')+'万':'')+'円';}
+  if(a>=10000){var m=Math.floor(a/10000),r=a%10000;return s+m.toLocaleString('ja-JP')+'万'+(r>0?r.toLocaleString('ja-JP'):'')+'円';}
+  return s+a.toLocaleString('ja-JP')+'円';
+}
+function gv(id){return Number(document.getElementById(id).value||0);}
+function mp(p,ar,y){var m=y*12,r=ar/100/12;if(m<=0||y<=0)return 0;if(r===0)return p/m;return p*r*Math.pow(1+r,m)/(Math.pow(1+r,m)-1);}
+function rb(p,ar,y,paid){var m=y*12,r=ar/100/12,pmt=mp(p,ar,y);if(paid>=m)return 0;if(r===0)return Math.max(0,p-pmt*paid);return Math.max(0,p*Math.pow(1+r,paid)-pmt*((Math.pow(1+r,paid)-1)/r));}
+function fvm(amt,ar,y){var m=y*12,r=Math.pow(1+ar/100,1/12)-1;if(m<=0)return 0;if(r===0)return amt*m;return amt*((Math.pow(1+r,m)-1)/r);}
+
+var fxMode='usd';
+
+function simOne(ir, fxExitOverride){
+  var loan=gv('loanAmount')*10000,lr=gv('loanRate'),sy=gv('shortYears'),ly=gv('longYears'),iy=gv('investYears'),tx=gv('taxRate')/100;
+  var extra=gv('extraMonthly')*10000;
+  var sp=mp(loan,lr,sy),lp=mp(loan,lr,ly),diff=Math.max(0,sp-lp);
+  var totalMonthly=diff+extra;
+  var fxEntry=gv('fxEntry')||150, fxExit=(fxExitOverride!=null?fxExitOverride:gv('fxExit'))||150;
+  var fvAFx,fvA,prin,profit,taxAmt,fxAdj;
+  if(fxMode==='usd' && fxEntry>0){
+    // ① 毎月の円額をfxEntryでドル転して積立
+    var monthlyUSD=totalMonthly/fxEntry;
+    // ② ドル建てで複利運用
+    var fvUSD=fvm(monthlyUSD,ir,iy);
+    var prinUSD=monthlyUSD*12*iy;
+    var profitUSD=fvUSD-prinUSD;
+    var fvUSDafterTax=prinUSD+Math.max(0,profitUSD)*(1-tx);
+    // ③ 出口レートで円転
+    fvAFx=fvUSDafterTax*fxExit;
+    // 円建て比較用（為替なし）
+    var fvBjpy=fvm(totalMonthly,ir,iy);
+    prin=totalMonthly*12*iy;
+    profit=fvBjpy-prin;
+    fvA=prin+Math.max(0,profit)*(1-tx);
+    taxAmt=Math.max(0,profitUSD)*tx*fxExit;
+    fxAdj=fvA>0?fvAFx/fvA:1;
+  } else {
+    var fvB=fvm(totalMonthly,ir,iy);
+    prin=totalMonthly*12*iy;
+    profit=fvB-prin;
+    fvA=prin+Math.max(0,profit)*(1-tx);
+    fvAFx=fvA;
+    taxAmt=Math.max(0,profit)*tx;
+    fxAdj=1;
+  }
+  var remain=rb(loan,lr,ly,iy*12),net=fvAFx-remain;
+  return{sp,lp,diff,extra,totalMonthly,prin,profit,fvA,fvAFx,remain,net,taxAmt,loan,lr,sy,ly,iy,ir,tx,fxEntry,fxExit,fxAdj};
+}
+
+window.setFxMode=function(btn){
+  document.querySelectorAll('[data-mode]').forEach(function(b){b.classList.remove('on');});
+  btn.classList.add('on');
+  fxMode=btn.dataset.mode;
+  var grp=document.getElementById('fxGroup');
+  var fxBeRow=document.getElementById('fxBeRow');
+  var fxChartWrap=document.getElementById('fxChartWrap');
+  if(fxMode==='jpy'){
+    grp.style.opacity='0.4';grp.style.pointerEvents='none';
+    if(fxBeRow)fxBeRow.style.display='none';
+    if(fxChartWrap)fxChartWrap.style.display='none';
+  } else {
+    grp.style.opacity='1';grp.style.pointerEvents='';
+    if(fxBeRow)fxBeRow.style.display='';
+    if(fxChartWrap)fxChartWrap.style.display='';
+  }
+  calc();
+};
+
+function findBreakeven(){
+  var lo=0,hi=30;
+  for(var i=0;i<60;i++){var mid=(lo+hi)/2;simOne(mid).net>0?hi=mid:lo=mid;}
+  return(lo+hi)/2;
+}
+
+function findFxBreakeven(){
+  // 出口レートを変化させて損益分岐レートを逆算
+  var ir=gv('investmentRate');
+  var lo=1,hi=500;
+  for(var i=0;i<60;i++){var mid=(lo+hi)/2;simOne(ir,mid).net>0?hi=mid:lo=mid;}
+  return(lo+hi)/2;
+}
+
+window.setTax=function(btn){
+  document.querySelectorAll('.tp').forEach(function(b){b.classList.remove('on');});
+  btn.classList.add('on');
+  document.getElementById('taxRate').value=btn.dataset.rate;
+  calc();
+};
+
+window.setTab=function(t){
+  currentTab=t;
+  document.querySelectorAll('.stab').forEach(function(b){b.classList.remove('on');});
+  document.getElementById('tab-'+t).classList.add('on');
+  renderResult();
+};
+
+function renderResult(){
+  var d=cache[currentTab];if(!d)return;
+  var net=d.net;
+  document.getElementById('netVal').textContent=(net>=0?'+':'')+yen(Math.abs(net));
+  document.getElementById('netVal').className='rmain-val '+(net>=0?'good':'bad');
+  var subText='投資評価額 '+yen(d.fvAFx)+' − ローン残債 '+yen(d.remain);
+  if(fxMode==='usd'&&d.fxAdj!==1){
+    var pct=((d.fxAdj-1)*100);
+    subText+=' （為替'+(pct>=0?'+':'')+pct.toFixed(1)+'% 影響）';
+  }
+  document.getElementById('netSub').textContent=subText;
+  document.getElementById('shortPayment').textContent=yen(d.sp);
+  document.getElementById('longPayment').textContent=yen(d.lp);
+  document.getElementById('loanDiff').textContent=yen(d.diff);
+  document.getElementById('diffDisplay').textContent=yen(d.diff)+'/月';
+  document.getElementById('monthlyDiff').textContent=yen(d.totalMonthly)+(d.extra>0?' (差額'+yen(d.diff)+'+追加'+yen(d.extra)+')':'');
+  document.getElementById('principal').textContent=yen(d.prin);
+  document.getElementById('profit').textContent=yen(d.profit);
+  document.getElementById('fvAfter').textContent=yen(d.fvAFx)+(fxMode==='usd'&&d.fxAdj!==1?' (為替反映)':'');
+  document.getElementById('remainLoan').textContent=yen(d.remain);
+  document.getElementById('multiplier').textContent=(d.prin>0?(d.fvAFx/d.prin):0).toFixed(2)+'倍';
+
+  var groups=[
+    {label:'ローンの比較',items:[
+      {n:'短期 月返済額',v:yen(d.sp),c:'',d:'借入'+yen(d.loan)+'を'+d.sy+'年で返す場合の毎月の支払い。'},
+      {n:'長期 月返済額',v:yen(d.lp),c:'',d:'借入'+yen(d.loan)+'を'+d.ly+'年で返す場合の毎月の支払い。期間が長いほど月々は楽になります。'},
+      {n:'月々の差額（ローン短期−長期）',v:yen(d.diff),c:'ac',d:'短期と長期の返済差額。長期ローンにした分、この金額が浮きます。'},
+      {n:'月々の追加積立額',v:yen(d.extra),c:'ac',d:d.extra>0?'差額に上乗せして毎月投資に回す金額。差額と合わせて合計'+yen(d.totalMonthly)+'を積み立てます。':'追加積立なし。差額のみを投資に回します。'},
+      {n:'月々の投資総額',v:yen(d.totalMonthly),c:'ac',d:'差額＋追加積立の合計。この金額を毎月コツコツ積み立てます。'},
+      {n:'短期 払う総利息',v:yen(d.sp*d.sy*12-d.loan),c:'bad',d:d.sy+'年間で銀行に支払う利息の合計。'},
+      {n:'長期 払う総利息',v:yen(d.lp*d.ly*12-d.loan),c:'bad',d:'長期は月々が楽な代わりに総利息が増えます。'},
+    ]},
+    {label:'投資の成果（利回り '+d.ir+'%シナリオ）',items:[
+      {n:'投資元本（積立した合計）',v:yen(d.prin),c:'',d:'毎月'+yen(d.totalMonthly)+'×'+d.iy+'年間の自己資金合計。'},
+      {n:'投資利益（複利で増えた分）',v:yen(d.profit),c:d.profit>=0?'good':'bad',d:'元本が年率'+d.ir+'%で増えた結果の上乗せ分。複利効果でお金がお金を呼びます。元本保証ではありません。'},
+      {n:'税金（利益への課税）',v:yen(d.taxAmt),c:'bad',d:d.tx===0?'NISA口座のため非課税。利益をまるごと受け取れます。':'利益に'+gv('taxRate')+'%課税。'},
+      {n:'税引後 投資評価額（円建て換算）',v:yen(d.fvA),c:'good',d:'為替影響なしの場合の円建て評価額。比較用。'},
+      {n:'税引後 投資評価額（為替反映）',v:yen(d.fvAFx),c:'good',d:fxMode==='usd'?'ドル建て運用後、出口レート'+d.fxExit+'円で円転した実際の評価額。':'円建て運用のため為替影響なし。'},
+      {n:'為替による損益影響',v:(d.fxAdj>=1?'+':'')+((d.fxAdj-1)*100).toFixed(1)+'%（'+yen(d.fvAFx-d.fvA)+'）',c:d.fxAdj>=1?'good':'bad',d:fxMode==='usd'?'積立レート'+d.fxEntry+'円 → 出口レート'+d.fxExit+'円の為替変動による円換算の増減。円高なら目減り、円安なら増加。':'円建て投資のため為替影響なし。'},
+      {n:'元本に対するリターン倍率',v:(d.prin>0?(d.fvAFx/d.prin):0).toFixed(2)+'倍',c:'ac',d:'投資した円建て元本に対し、為替反映後の最終評価額が何倍になったか。'},
+    ]},
+    {label:'最終的な手元資産',items:[
+      {n:'長期ローン残債（'+d.iy+'年後）',v:yen(d.remain),c:'bad',d:'投資終了時点でまだ残っているローン。この分は返済が必要です。'},
+      {n:'残債を返したあとに残るお金',v:(net>=0?'+':'')+yen(Math.abs(net)),c:net>=0?'good':'bad',d:net>=0?'投資評価額からローン残債を一括返済しても'+yen(net)+'が残ります。':'投資評価額がローン残債を'+yen(Math.abs(net))+'下回っています。'},
+    ]},
+  ];
+  var html='';
+  groups.forEach(function(g){
+    html+='<div class="dc"><div class="dg">'+g.label+'</div>';
+    g.items.forEach(function(item){
+      html+='<div class="di"><div class="di-top"><span class="di-n">'+item.n+'</span><span class="di-v '+item.c+'">'+item.v+'</span></div><div class="di-d">'+item.d+'</div></div>';
+    });
+    html+='</div>';
+  });
+  document.getElementById('detailArea').innerHTML=html;
+}
+
+function renderDangerZone(be){
+  var ir=gv('investmentRate'),margin=ir-be;
+  var cls,title,body;
+  if(margin>=3){cls='safe';title='安全圏です';body='損益分岐利回りは '+be.toFixed(2)+'% です。現在の想定利回り（'+ir+'%）は '+margin.toFixed(2)+'% の余裕があります。多少の運用不振があっても黒字を維持できます。';}
+  else if(margin>=1){cls='warn';title='注意ゾーン — 余裕は小さめです';body='損益分岐利回りは '+be.toFixed(2)+'% です。現在の想定利回り（'+ir+'%）との差が '+margin.toFixed(2)+'% しかありません。利回りが少し下がると赤字に転落します。';}
+  else if(margin>=0){cls='warn';title='警戒ゾーン — 紙一重の状態です';body='損益分岐利回りは '+be.toFixed(2)+'% です。現在の想定利回りとほぼ同水準です。想定どおりに運用できなければ赤字になります。';}
+  else{cls='danger';title='デンジャーゾーン — 現在の設定では赤字です';body='損益分岐利回りは '+be.toFixed(2)+'% ですが、現在の想定利回り（'+ir+'%）はそれを下回っています。借入額・期間・利回りを見直してください。';}
+  var box=document.getElementById('dzBox');
+  box.className='dz '+cls;
+  document.getElementById('dzTitle').textContent=title;
+  document.getElementById('dzBe').textContent='損益分岐利回り：'+be.toFixed(2)+'%';
+  document.getElementById('dzBody').textContent=body;
+}
+
+function renderChart(){
+  var rates=[1,2,3,4,5,6,7,8,9,10,11,12];
+  var nets=rates.map(function(r){return simOne(r).net;});
+  var maxAbs=Math.max.apply(null,nets.map(Math.abs));
+  var baseRate=gv('investmentRate');
+  var html='';
+  nets.forEach(function(net,i){
+    var r=rates[i],pct=maxAbs>0?Math.abs(net)/maxAbs*100:0,isPos=net>=0,isCurrent=r===baseRate;
+    var color=isPos?'#059669':'#dc2626';
+    html+='<div class="bar-row'+(isCurrent?' hl':'')+'">'+
+      '<span class="bar-rate">'+r+'%'+(isCurrent?' ◀':'')+'</span>'+
+      '<div class="bar-track"><div class="bar-fill" style="width:'+pct.toFixed(1)+'%;background:'+color+'"></div></div>'+
+      '<span class="bar-val '+(isPos?'pos':'neg')+'">'+(net>=0?'+':'')+yen(net)+'</span></div>';
+  });
+  document.getElementById('barChart').innerHTML=html;
+}
+
+function renderFxHistory(fxBe){
+  var fxExit=gv('fxExit');
+  var beFloor=Math.floor(fxBe/10)*10;
+  var html='';
+  FX_HISTORY.forEach(function(h){
+    var isDanger=h.rate<=beFloor; // 損益分岐より円高（低い）側
+    var isCurrent=Math.abs(h.rate-Math.round(fxExit/10)*10)<6;
+    var rowCls=isDanger?'dng':(isCurrent?'cur':'');
+    var rateCls=isDanger?'dng':(isCurrent?'cur':'');
+    var badges='<span class="badge '+h.status+'">'+h.sl+'</span>';
+    if(isDanger) badges+='<span class="badge danger">損益分岐より円高（赤字リスク）</span>';
+    if(isCurrent&&!isDanger) badges+='<span class="badge accent">現在の出口レートに近い</span>';
+    html+='<div class="hist-item '+rowCls+'">'+
+      '<div class="hist-badge">'+
+        '<div class="hist-rate '+rateCls+'" style="font-size:13px">'+h.range+'</div>'+
+        '<div class="hist-dot '+h.status+'"></div>'+
+      '</div>'+
+      '<div class="hist-content">'+
+        '<div class="hist-period">'+h.period+'</div>'+
+        '<div class="hist-event">'+h.label+'</div>'+
+        '<div class="hist-desc">'+h.event+'</div>'+
+        '<div class="badges">'+badges+'</div>'+
+      '</div>'+
+    '</div>';
+  });
+  var wrap=document.getElementById('fxHistWrap');
+  if(wrap){
+    wrap.innerHTML=
+      '<div class="hist-head">'+
+        '<div class="hist-head-title">為替レート水準別の歴史的背景</div>'+
+        '<div class="hist-head-sub">赤背景 = 損益分岐レート（'+fxBe.toFixed(0)+'円）より円高で赤字リスク<br>黄背景 = 現在の出口レート（'+fxExit+'円）に近い水準</div>'+
+      '</div>'+html;
+  }
+  var sec=document.getElementById('fxHistSec');
+  if(sec) sec.style.display=fxMode==='usd'?'':'none';
+}
+
+function renderHistory(be){
+  var currentRate=gv('loanRate'),beFloor=Math.ceil(be),html='';
+  HISTORY.forEach(function(h){
+    var isDanger=h.rate>=beFloor,isCurrent=Math.abs(h.rate-currentRate)<0.5;
+    var rowCls=isDanger?'dng':(isCurrent?'cur':'');
+    var rateCls=isDanger?'dng':(isCurrent?'cur':'');
+    var badges='<span class="badge '+h.status+'">'+h.sl+'</span>';
+    if(isDanger)badges+='<span class="badge danger">損益分岐を超える水準</span>';
+    if(isCurrent&&!isDanger)badges+='<span class="badge accent">現在の契約金利に近い</span>';
+    html+='<div class="hist-item '+rowCls+'">'+
+      '<div class="hist-badge">'+
+        '<div class="hist-rate '+rateCls+'">'+h.rate+'%</div>'+
+        '<div class="hist-dot '+h.status+'"></div>'+
+      '</div>'+
+      '<div class="hist-content">'+
+        '<div class="hist-period">'+h.period+'</div>'+
+        '<div class="hist-event">'+h.label+'</div>'+
+        '<div class="hist-desc">'+h.event+'</div>'+
+        '<div class="badges">'+badges+'</div>'+
+      '</div>'+
+    '</div>';
+  });
+  document.getElementById('histWrap').innerHTML=
+    '<div class="hist-head">'+
+      '<div class="hist-head-title">金利水準別の歴史的背景</div>'+
+      '<div class="hist-head-sub">赤背景 = 損益分岐利回りを超える歴史的金利水準<br>黄背景 = 現在の契約金利に近い水準</div>'+
+    '</div>'+html;
+}
+
+function renderBePanel(be){
+  var ir=gv('investmentRate');
+  var margin=ir-be;
+  var color=margin>=3?'var(--good)':margin>=1?'var(--warn)':'var(--bad)';
+  document.getElementById('beLine').style.color=color;
+  document.getElementById('beLine').textContent='年率 '+be.toFixed(2)+'% 以上で黒字';
+  document.getElementById('beLineDesc').textContent='現在の想定利回り '+ir+'% との差：'+(margin>=0?'+':'')+margin.toFixed(2)+'%　'+(margin>=3?'余裕あり':margin>=1?'やや余裕あり':margin>=0?'紙一重':'想定利回りでも赤字');
+
+  if(fxMode==='usd'){
+    var fxBe=findFxBreakeven();
+    var fxExit=gv('fxExit');
+    var fxMargin=fxExit-fxBe;
+    var fxColor=fxMargin>=20?'var(--good)':fxMargin>=5?'var(--warn)':'var(--bad)';
+    document.getElementById('fxBeLine').style.color=fxColor;
+    document.getElementById('fxBeLine').textContent=fxBe.toFixed(1)+'円/ドル 以上で黒字';
+    document.getElementById('fxBeLineDesc').textContent='現在の出口レート '+fxExit+'円 との差：'+(fxMargin>=0?'+':'')+fxMargin.toFixed(1)+'円　'+(fxMargin>=20?'余裕あり':fxMargin>=5?'やや余裕あり':fxMargin>=0?'円高に注意':'現在レートでも赤字');
+    // fx chart label
+    var lbl=document.getElementById('fxChartLabel');
+    if(lbl)lbl.textContent=gv('fxEntry');
+    renderFxChart(fxBe);
+  }
+}
+
+function renderFxChart(fxBe){
+  var ir=gv('investmentRate');
+  var fxEntry=gv('fxEntry')||150;
+  var fxExit=gv('fxExit')||150;
+  var rates=[];
+  for(var r=60;r<=220;r+=10)rates.push(r);
+  var sims=rates.map(function(r){return simOne(ir,r);});
+  // 基準：積立元本に対して為替反映後の評価額がプラスかマイナスか
+  var vsBases=sims.map(function(s){return s.fvAFx - s.prin;});
+  var maxAbs=Math.max.apply(null,vsBases.map(function(v){return Math.abs(v);}));
+  var html='<div style="font-size:10px;color:var(--muted);margin-bottom:8px;line-height:1.6">'
+    +'<span style="color:#059669;font-weight:700">■</span> 元本超過（プラス）　'
+    +'<span style="color:#dc2626;font-weight:700">■</span> 元本割れ（マイナス）　'
+    +'下段「手取」は残債返済後の最終手元額'
+    +'</div>';
+  sims.forEach(function(s,i){
+    var r=rates[i];
+    var vsBase=vsBases[i];
+    var pct=maxAbs>0?Math.abs(vsBase)/maxAbs*100:0;
+    var isPos=vsBase>=0;
+    var isCurrent=Math.abs(r-fxExit)<5;
+    var color=isPos?'#059669':'#dc2626';
+    var netStr=(s.net>=0?'+':'')+yen(s.net);
+    html+='<div class="bar-row'+(isCurrent?' hl':'')+'">'
+      +'<span class="bar-rate" style="width:38px">'+r+'円'+(isCurrent?' ◀':'')+'</span>'
+      +'<div class="bar-track"><div class="bar-fill" style="width:'+pct.toFixed(1)+'%;background:'+color+'"></div></div>'
+      +'<div style="text-align:right;min-width:120px;flex-shrink:0">'
+        +'<span class="bar-val '+(isPos?'pos':'neg')+'">'+(vsBase>=0?'+':'')+yen(vsBase)+'</span>'
+        +'<span style="font-size:10px;color:var(--muted);display:block;margin-top:1px">手取 '+netStr+'</span>'
+      +'</div>'
+      +'</div>';
+  });
+  var el=document.getElementById('fxBarChart');
+  if(el)el.innerHTML=html;
+  var lbl=document.getElementById('fxChartLabel');
+  if(lbl)lbl.textContent=fxEntry;
+}
+
+function calc(){
+  var baseIr=gv('investmentRate');
+  var bearIr=Math.max(0.1,baseIr-4),bullIr=baseIr+3;
+  cache.bear=simOne(bearIr);
+  cache.base=simOne(baseIr);
+  cache.bull=simOne(bullIr);
+  document.getElementById('rate-bear').textContent=bearIr.toFixed(1)+'%';
+  document.getElementById('rate-base').textContent=baseIr.toFixed(1)+'%';
+  document.getElementById('rate-bull').textContent=bullIr.toFixed(1)+'%';
+  var be=findBreakeven();
+  renderDangerZone(be);
+  renderBePanel(be);
+  renderResult();
+  renderChart();
+  renderHistory(be);
+  if(fxMode==='usd'){var fxBe2=findFxBreakeven();renderFxHistory(fxBe2);}
+  // update fx note
+  var fxNote=document.getElementById('fxNote');
+  if(fxNote){
+    if(fxMode==='usd'){
+      fxNote.textContent='ドル建て投資モード：毎月の積立額を積立レート（'+gv('fxEntry')+'円）でドルに換えて投資し、'+gv('investYears')+'年後に出口レート（'+gv('fxExit')+'円）で円に戻す想定です。円高になると円換算の資産が目減りします。';
+    } else {
+      fxNote.textContent='円建て投資モード：投資信託（円建て）など、為替の影響を直接受けない運用を想定しています。為替設定欄は無効です。';
+    }
+  }
+}
+
+document.querySelectorAll('input').forEach(function(el){
+  el.addEventListener('input',function(){
+    document.querySelectorAll('.tp').forEach(function(b){
+      Math.abs(parseFloat(b.dataset.rate)-parseFloat(document.getElementById('taxRate').value))<0.001?b.classList.add('on'):b.classList.remove('on');
+    });
+    calc();
+  });
+});
+calc();
+})();
+</script>
+
+
+</body></html>
