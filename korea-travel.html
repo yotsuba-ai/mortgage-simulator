@@ -613,6 +613,12 @@ function lsGet(key, fallback){
 function lsSet(key, val){
   try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){}
 }
+function rawGet(key){
+  try{ return localStorage.getItem(key); }catch(e){ return null; }
+}
+function rawSet(key, val){
+  try{ localStorage.setItem(key, val); }catch(e){}
+}
 function toNum(v){
   const n = parseFloat(String(v).replace(/[^0-9.\-]/g,''));
   return isFinite(n) && n >= 0 ? n : 0;
@@ -623,7 +629,7 @@ function fmt(n){
 
 /* ---------- theme ---------- */
 (function initTheme(){
-  const saved = localStorage.getItem('ktt_theme');
+  const saved = rawGet('ktt_theme');
   if(saved === 'dark' || saved === 'light'){
     document.documentElement.setAttribute('data-theme', saved);
   }
@@ -639,7 +645,7 @@ $('#themeBtn').addEventListener('click', () => {
   const isDark = cur === 'dark' || (!cur && window.matchMedia('(prefers-color-scheme:dark)').matches);
   const next = isDark ? 'light' : 'dark';
   document.documentElement.setAttribute('data-theme', next);
-  localStorage.setItem('ktt_theme', next);
+  rawSet('ktt_theme', next);
   updateThemeBtn();
 });
 
