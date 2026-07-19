@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>韓国旅行おたすけツール</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#f4f5f7;
+  --surface:#ffffff;
+  --surface2:#f1f3f5;
+  --border:#e0e2e8;
+  --border2:#c8cad2;
+  --text:#111318;
+  --muted:#6b7280;
+  --accent:#2563eb;
+  --accent-bg:#eff6ff;
+  --accent-text:#1d4ed8;
+  --good:#059669;
+  --good-bg:#ecfdf5;
+  --good-text:#065f46;
+  --bad:#dc2626;
+  --bad-bg:#fef2f2;
+  --bad-text:#991b1b;
+  --warn:#d97706;
+  --warn-bg:#fffbeb;
+  --warn-text:#92400e;
+  --radius:12px;
+  --radius-sm:8px;
+}
+@media(prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f1117;
+    --surface:#1a1d27;
+    --surface2:#222535;
+    --border:#2e3248;
+    --border2:#3e4260;
+    --text:#e8eaf0;
+    --muted:#7880a0;
+    --accent:#4f8ef7;
+    --accent-bg:#1e2d4a;
+    --accent-text:#93c5fd;
+    --good:#34d399;
+    --good-bg:#064e3b;
+    --good-text:#6ee7b7;
+    --bad:#f87171;
+    --bad-bg:#450a0a;
+    --bad-text:#fca5a5;
+    --warn:#fbbf24;
+    --warn-bg:#451a03;
+    --warn-text:#fde68a;
+  }
+}
+html[data-theme="dark"]{
+  --bg:#0f1117;
+  --surface:#1a1d27;
+  --surface2:#222535;
+  --border:#2e3248;
+  --border2:#3e4260;
+  --text:#e8eaf0;
+  --muted:#7880a0;
+  --accent:#4f8ef7;
+  --accent-bg:#1e2d4a;
+  --accent-text:#93c5fd;
+  --good:#34d399;
+  --good-bg:#064e3b;
+  --good-text:#6ee7b7;
+  --bad:#f87171;
+  --bad-bg:#450a0a;
+  --bad-text:#fca5a5;
+  --warn:#fbbf24;
+  --warn-bg:#451a03;
+  --warn-text:#fde68a;
+}
+html[data-theme="light"]{
+  --bg:#f4f5f7;
+  --surface:#ffffff;
+  --surface2:#f1f3f5;
+  --border:#e0e2e8;
+  --border2:#c8cad2;
+  --text:#111318;
+  --muted:#6b7280;
+  --accent:#2563eb;
+  --accent-bg:#eff6ff;
+  --accent-text:#1d4ed8;
+  --good:#059669;
+  --good-bg:#ecfdf5;
+  --good-text:#065f46;
+  --bad:#dc2626;
+  --bad-bg:#fef2f2;
+  --bad-text:#991b1b;
+  --warn:#d97706;
+  --warn-bg:#fffbeb;
+  --warn-text:#92400e;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Noto Sans JP',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:76px;font-size:14px;line-height:1.5}
+
+/* header */
+.header{background:var(--surface);border-bottom:1px solid var(--border);padding:20px 16px 18px;position:sticky;top:0;z-index:50}
+.header-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.header-left{flex:1;min-width:0}
+.header-badge{display:inline-block;background:var(--accent);color:#fff;font-size:10px;font-weight:700;letter-spacing:2px;padding:3px 8px;border-radius:4px;margin-bottom:8px}
+.header h1{font-size:18px;font-weight:800;letter-spacing:-0.3px;color:var(--text);line-height:1.3}
+.header p{font-size:12px;color:var(--muted);margin-top:4px}
+.header-actions{display:flex;gap:6px;align-items:center;flex-shrink:0;margin-top:2px}
+.theme-btn{background:none;border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 9px;cursor:pointer;font-size:15px;color:var(--muted);line-height:1;transition:background .15s}
+.theme-btn:active{background:var(--surface2)}
+
+.page{padding:14px 12px 12px;display:none}
+.page.on{display:block}
+
+/* section */
+.sec{margin-top:18px}
+.sec:first-child{margin-top:0}
+.sec-label{font-size:10px;font-weight:700;letter-spacing:2px;color:var(--muted);margin-bottom:8px;text-transform:uppercase}
+
+/* input group */
+.grp{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.row{display:flex;align-items:center;padding:12px 14px;border-bottom:1px solid var(--border);gap:10px}
+.row:last-child{border-bottom:none}
+.rl{flex:1;font-size:13px;font-weight:600;color:var(--text);line-height:1.3}
+.rl span{display:block;font-size:11px;font-weight:400;color:var(--muted);margin-top:2px}
+.ri{display:flex;align-items:center;gap:4px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 10px}
+.ri input{width:100px;background:transparent;border:none;font-size:15px;font-family:'SF Mono','Courier New',monospace;text-align:right;color:var(--text);outline:none;-webkit-appearance:none;appearance:none}
+.ri input::-webkit-inner-spin-button,.ri input::-webkit-outer-spin-button{-webkit-appearance:none}
+.ru{font-size:12px;color:var(--muted);white-space:nowrap}
+
+/* card */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:10px}
+.card-title{font-size:12px;font-weight:700;color:var(--muted);margin-bottom:6px;letter-spacing:.5px}
+
+/* convert */
+.conv-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:10px}
+.conv-lbl{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.5px;margin-bottom:6px}
+.conv-input-wrap{display:flex;align-items:center;gap:8px}
+.conv-sym{font-size:20px;font-weight:700;color:var(--accent)}
+.conv-input-wrap input{flex:1;min-width:0;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;font-size:22px;font-family:'SF Mono','Courier New',monospace;color:var(--text);outline:none}
+.conv-eq{text-align:center;color:var(--muted);font-size:16px;margin:4px 0}
+
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.chip{font-size:12px;padding:7px 12px;border-radius:20px;border:1px solid var(--border2);cursor:pointer;background:var(--surface2);color:var(--text);font-weight:600}
+.chip:active{background:var(--accent-bg);color:var(--accent-text);border-color:var(--accent)}
+
+.rate-toggle{width:100%;text-align:left;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;font-size:12px;color:var(--muted);cursor:pointer;font-weight:600;margin-top:8px}
+.rate-edit{display:none;margin-top:8px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px}
+.rate-edit.on{display:block}
+.rate-edit-row{display:flex;align-items:center;gap:8px}
+.rate-edit-row input{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 10px;font-size:15px;font-family:'SF Mono','Courier New',monospace;color:var(--text);outline:none}
+.rate-edit p{font-size:11px;color:var(--muted);margin-top:8px;line-height:1.6}
+
+/* price list */
+.price-item{display:flex;justify-content:space-between;align-items:center;padding:11px 14px;border-bottom:1px solid var(--border)}
+.price-item:last-child{border-bottom:none}
+.price-name{font-size:13px;font-weight:600;color:var(--text)}
+.price-vals{text-align:right}
+.price-krw{font-size:13px;font-family:'SF Mono','Courier New',monospace;font-weight:700;color:var(--text)}
+.price-jpy{font-size:11px;color:var(--muted);font-family:'SF Mono','Courier New',monospace}
+
+/* search */
+.search-wrap{margin-bottom:14px}
+.search-wrap input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:11px 14px;font-size:14px;color:var(--text);outline:none}
+.search-wrap input:focus{border-color:var(--accent)}
+
+/* phrase */
+.phrase-cat-title{font-size:13px;font-weight:800;color:var(--text);margin:16px 0 8px}
+.phrase-cat-title:first-child{margin-top:0}
+.phrase-item{display:flex;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid var(--border);cursor:pointer}
+.phrase-item:last-child{border-bottom:none}
+.phrase-text{flex:1;min-width:0}
+.phrase-ja{font-size:13px;font-weight:600;color:var(--text)}
+.phrase-ko{font-size:15px;font-weight:700;color:var(--accent-text);margin-top:3px}
+.phrase-yomi{font-size:11px;color:var(--muted);margin-top:2px}
+.speak-btn{flex-shrink:0;background:var(--surface2);border:1px solid var(--border);border-radius:50%;width:34px;height:34px;font-size:15px;cursor:pointer;color:var(--muted)}
+.speak-btn:active{background:var(--accent-bg)}
+.no-results{text-align:center;color:var(--muted);font-size:13px;padding:30px 0}
+
+/* fullscreen overlay */
+.overlay{position:fixed;inset:0;background:var(--bg);z-index:300;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center}
+.overlay.on{display:flex}
+.overlay-close{position:absolute;top:16px;right:16px;background:var(--surface2);border:1px solid var(--border);border-radius:50%;width:40px;height:40px;font-size:18px;cursor:pointer;color:var(--text)}
+.overlay-ko{font-size:15vw;font-weight:800;color:var(--text);line-height:1.2;word-break:keep-all}
+.overlay-yomi{font-size:18px;color:var(--muted);margin-top:16px}
+.overlay-ja{font-size:14px;color:var(--muted);margin-top:8px}
+
+/* checklist */
+.check-cat-title{font-size:13px;font-weight:800;color:var(--text);margin:16px 0 8px}
+.check-cat-title:first-child{margin-top:0}
+.check-item{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--border)}
+.check-item:last-child{border-bottom:none}
+.check-item input[type=checkbox]{width:19px;height:19px;flex-shrink:0;accent-color:var(--accent)}
+.check-item label{flex:1;font-size:13px;color:var(--text)}
+.check-item.done label{color:var(--muted);text-decoration:line-through}
+.check-del{flex-shrink:0;background:none;border:none;color:var(--bad);font-size:16px;cursor:pointer;padding:4px 6px}
+.progress-wrap{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.progress-txt{font-size:13px;font-weight:700;color:var(--text)}
+.progress-bar{flex:1;height:8px;background:var(--surface2);border-radius:4px;overflow:hidden;margin:0 10px}
+.progress-fill{height:100%;background:var(--accent);transition:width .2s}
+.add-row{display:flex;gap:8px;margin-top:12px}
+.add-row input{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;font-size:13px;color:var(--text);outline:none}
+.add-btn{background:var(--accent);color:#fff;border:none;border-radius:var(--radius-sm);padding:0 16px;font-size:13px;font-weight:700;cursor:pointer}
+.reset-btn{width:100%;background:var(--bad-bg);color:var(--bad-text);border:1px solid var(--bad);border-radius:var(--radius-sm);padding:11px;font-size:13px;font-weight:700;cursor:pointer;margin-top:16px}
+.reset-btn:active{opacity:.8}
+
+/* budget */
+.budget-total{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:12px;text-align:center}
+.budget-total-label{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.5px}
+.budget-total-jpy{font-size:32px;font-family:'SF Mono','Courier New',monospace;font-weight:700;color:var(--accent);margin-top:6px}
+.budget-total-krw{font-size:14px;font-family:'SF Mono','Courier New',monospace;color:var(--muted);margin-top:4px}
+.budget-total-day{font-size:12px;color:var(--muted);margin-top:10px;border-top:1px solid var(--border);padding-top:10px}
+
+/* info */
+.info-lines{font-size:13px;color:var(--text);line-height:1.9;margin-top:6px}
+table.size-table{width:100%;border-collapse:collapse;margin-top:8px}
+table.size-table th,table.size-table td{padding:8px 6px;text-align:center;font-size:12px;border-bottom:1px solid var(--border)}
+table.size-table th{color:var(--muted);font-weight:700;font-size:10px;letter-spacing:.5px}
+table.size-table td{font-family:'SF Mono','Courier New',monospace;color:var(--text)}
+
+/* tab bar */
+.tabbar{position:fixed;bottom:0;left:0;right:0;z-index:100;background:var(--surface);border-top:1px solid var(--border);display:flex;padding:4px 2px calc(4px + env(safe-area-inset-bottom))}
+.tab-btn{flex:1;background:none;border:none;padding:8px 2px;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;color:var(--muted);font-size:10px;font-weight:600}
+.tab-btn .ic{font-size:19px}
+.tab-btn.on{color:var(--accent-text)}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div class="header-left">
+      <span class="header-badge">TRAVEL KIT</span>
+      <h1>韓国旅行おたすけツール</h1>
+      <p>換算・会話・予算・持ち物・情報をこれ一つで</p>
+    </div>
+    <div class="header-actions">
+      <button class="theme-btn" id="themeBtn" title="テーマ切替">🌙</button>
+    </div>
+  </div>
+</div>
+
+<!-- 1. 換算 -->
+<div class="page on" id="page-convert">
+  <div class="sec">
+    <div class="conv-box">
+      <div class="conv-lbl">ウォン (KRW)</div>
+      <div class="conv-input-wrap">
+        <span class="conv-sym">₩</span>
+        <input type="text" inputmode="numeric" id="krwInput" placeholder="0">
+      </div>
+      <div class="conv-eq">⇅</div>
+      <div class="conv-lbl">円 (JPY)</div>
+      <div class="conv-input-wrap">
+        <span class="conv-sym">¥</span>
+        <input type="text" inputmode="numeric" id="jpyInput" placeholder="0">
+      </div>
+      <div class="chips" id="chipRow"></div>
+      <button class="rate-toggle" id="rateToggleBtn">レートを編集 ▾</button>
+      <div class="rate-edit" id="rateEdit">
+        <div class="rate-edit-row">
+          <span class="ru">100円 =</span>
+          <input type="text" inputmode="numeric" id="rateInput">
+          <span class="ru">ウォン</span>
+        </div>
+        <p>現在のレート設定はこの端末に保存されます。実際の両替レートは店舗により異なるため目安としてご利用ください。</p>
+      </div>
+    </div>
+  </div>
+  <div class="sec">
+    <div class="sec-label">物価の目安</div>
+    <div class="grp" id="priceList"></div>
+  </div>
+</div>
+
+<!-- 2. 会話帳 -->
+<div class="page" id="page-phrases">
+  <div class="search-wrap">
+    <input type="text" id="phraseSearch" placeholder="🔍 フレーズを検索(日本語・ハングル可)">
+  </div>
+  <div id="phraseList"></div>
+</div>
+
+<!-- 3. 予算 -->
+<div class="page" id="page-budget">
+  <div class="sec">
+    <div class="grp">
+      <div class="row">
+        <div class="rl">旅行日数</div>
+        <div class="ri"><input type="text" inputmode="numeric" id="bDays"><span class="ru">日</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="sec">
+    <div class="sec-label">1日あたりの予算(KRW)</div>
+    <div class="grp" id="budgetItems"></div>
+  </div>
+  <div class="sec">
+    <div class="budget-total">
+      <div class="budget-total-label">旅行全体の合計</div>
+      <div class="budget-total-jpy" id="bTotalJpy">¥0</div>
+      <div class="budget-total-krw" id="bTotalKrw">₩0</div>
+      <div class="budget-total-day" id="bTotalDay">1日あたり ¥0 / ₩0</div>
+    </div>
+  </div>
+</div>
+
+<!-- 4. 持ち物 -->
+<div class="page" id="page-checklist">
+  <div class="sec">
+    <div class="progress-wrap">
+      <span class="progress-txt" id="ckProgressTxt">0/0</span>
+      <div class="progress-bar"><div class="progress-fill" id="ckProgressFill" style="width:0%"></div></div>
+    </div>
+    <div id="checklistBody"></div>
+    <div class="add-row">
+      <input type="text" id="ckAddInput" placeholder="追加する持ち物">
+      <button class="add-btn" id="ckAddBtn">追加</button>
+    </div>
+    <button class="reset-btn" id="ckResetBtn">チェックを全てリセット</button>
+  </div>
+</div>
+
+<!-- 5. 情報 -->
+<div class="page" id="page-info">
+  <div class="sec" id="infoCards"></div>
+  <div class="sec">
+    <div class="sec-label">靴のサイズ換算</div>
+    <div class="card"><table class="size-table"><thead><tr><th>日本(cm)</th><th>韓国</th></tr></thead><tbody id="shoeTable"></tbody></table></div>
+  </div>
+  <div class="sec">
+    <div class="sec-label">服のサイズ換算</div>
+    <div class="card"><table class="size-table"><thead><tr><th>日本</th><th>韓国</th></tr></thead><tbody id="topTable"></tbody></table></div>
+  </div>
+</div>
+
+<div class="tabbar">
+  <button class="tab-btn on" data-page="convert"><span class="ic">💱</span>換算</button>
+  <button class="tab-btn" data-page="phrases"><span class="ic">💬</span>会話帳</button>
+  <button class="tab-btn" data-page="budget"><span class="ic">📊</span>予算</button>
+  <button class="tab-btn" data-page="checklist"><span class="ic">✅</span>持ち物</button>
+  <button class="tab-btn" data-page="info"><span class="ic">ℹ️</span>情報</button>
+</div>
+
+<div class="overlay" id="phraseOverlay">
+  <button class="overlay-close" id="overlayClose">✕</button>
+  <div class="overlay-ko" id="overlayKo"></div>
+  <div class="overlay-yomi" id="overlayYomi"></div>
+  <div class="overlay-ja" id="overlayJa"></div>
+</div>
+
+<script>
+/*KTT_DATA_START*/
+const KTT_DATA = {
+  prices: [
+    {label: 'カフェのコーヒー(アメリカーノ)', krw: 4500},
+    {label: 'コンビニのキンパプ', krw: 2000},
+    {label: '冷麺', krw: 10000},
+    {label: 'サムギョプサル(1人前)', krw: 15000},
+    {label: 'チキン(1羽)', krw: 20000},
+    {label: '地下鉄初乗り(T-money)', krw: 1400},
+    {label: 'タクシー初乗り', krw: 4800},
+    {label: 'Nソウルタワー展望台入場料', krw: 21000},
+    {label: 'ホテル(中級1泊)', krw: 120000},
+    {label: '屋台のトッポッキ', krw: 4000},
+    {label: 'マッコリ(ボトル)', krw: 4000},
+    {label: 'コンビニのビール(缶)', krw: 2500},
+    {label: 'チムジルバン入場料', krw: 12000},
+    {label: 'ノレバン(カラオケ、1時間)', krw: 20000},
+    {label: '韓国料理店の定食', krw: 9000}
+  ],
+  phrases: [
+    {
+      cat: '基本・あいさつ',
+      items: [
+        {ja: 'こんにちは', ko: '안녕하세요', yomi: 'アンニョンハセヨ'},
+        {ja: 'ありがとうございます', ko: '감사합니다', yomi: 'カムサハムニダ'},
+        {ja: 'すみません(呼びかけ)', ko: '저기요', yomi: 'チョギヨ'},
+        {ja: 'すみません(謝罪)', ko: '죄송합니다', yomi: 'チェソンハムニダ'},
+        {ja: 'はい', ko: '네', yomi: 'ネ'},
+        {ja: 'いいえ', ko: '아니요', yomi: 'アニヨ'},
+        {ja: 'さようなら(見送る側が言う)', ko: '안녕히 가세요', yomi: 'アンニョンヒ ガセヨ'},
+        {ja: 'さようなら(去る側が言う)', ko: '안녕히 계세요', yomi: 'アンニョンヒ ケセヨ'},
+        {ja: '大丈夫です', ko: '괜찮아요', yomi: 'ケンチャナヨ'},
+        {ja: 'わかりました', ko: '알겠습니다', yomi: 'アルゲッスムニダ'},
+        {ja: '日本語できる方いますか', ko: '일본어 하시는 분 계세요', yomi: 'イルボノ ハシヌン ブン ケセヨ'},
+        {ja: 'もう一度言ってください', ko: '다시 한번 말해 주세요', yomi: 'タシ ハンボン マレ ジュセヨ'}
+      ]
+    },
+    {
+      cat: '食事',
+      items: [
+        {ja: 'これください', ko: '이거 주세요', yomi: 'イゴ ジュセヨ'},
+        {ja: 'おすすめは何ですか', ko: '추천 메뉴가 뭐예요', yomi: 'チュチョン メニュガ モエヨ'},
+        {ja: '辛くしないでください', ko: '맵지 않게 해 주세요', yomi: 'メプチ アンケ ヘ ジュセヨ'},
+        {ja: '美味しいです', ko: '맛있어요', yomi: 'マシッソヨ'},
+        {ja: 'お会計お願いします', ko: '계산해 주세요', yomi: 'ケサネ ジュセヨ'},
+        {ja: '2人です', ko: '두 명이에요', yomi: 'トゥミョンイエヨ'},
+        {ja: '取り皿ください', ko: '앞접시 주세요', yomi: 'アプチョプシ ジュセヨ'},
+        {ja: 'お水ください', ko: '물 좀 주세요', yomi: 'ムル ジョム ジュセヨ'},
+        {ja: 'とても辛いです', ko: '너무 매워요', yomi: 'ノム メウォヨ'},
+        {ja: 'おかわりできますか', ko: '리필 되나요', yomi: 'リピル デナヨ'},
+        {ja: '持ち帰りできますか', ko: '포장 되나요', yomi: 'ポジャン デナヨ'},
+        {ja: '禁煙席はありますか', ko: '금연석 있어요', yomi: 'クミョンソク イッソヨ'}
+      ]
+    },
+    {
+      cat: '買い物',
+      items: [
+        {ja: 'いくらですか', ko: '얼마예요', yomi: 'オルマエヨ'},
+        {ja: '試着できますか', ko: '입어 봐도 돼요', yomi: 'イボ バド ドェヨ'},
+        {ja: '少しまけてください', ko: '조금 깎아 주세요', yomi: 'チョグム カッカ ジュセヨ'},
+        {ja: 'カードで払えますか', ko: '카드로 계산할 수 있어요', yomi: 'カドゥロ ケサナル ス イッソヨ'},
+        {ja: '免税できますか', ko: '면세 되나요', yomi: 'ミョンセ デナヨ'},
+        {ja: '他の色はありますか', ko: '다른 색 있어요', yomi: 'タルン セク イッソヨ'},
+        {ja: 'サイズ違いはありますか', ko: '다른 사이즈 있어요', yomi: 'タルン サイズ イッソヨ'},
+        {ja: '見ているだけです', ko: '그냥 구경하는 거예요', yomi: 'クニャン クギョンハヌン ゴエヨ'},
+        {ja: 'これをください(購入)', ko: '이걸로 주세요', yomi: 'イゴルロ ジュセヨ'},
+        {ja: '袋ください', ko: '봉투 주세요', yomi: 'ポントゥ ジュセヨ'},
+        {ja: '領収書ください', ko: '영수증 주세요', yomi: 'ヨンスジュン ジュセヨ'}
+      ]
+    },
+    {
+      cat: '交通・移動',
+      items: [
+        {ja: 'ここまで行ってください', ko: '여기까지 가 주세요', yomi: 'ヨギカジ カ ジュセヨ'},
+        {ja: '明洞まで行ってください', ko: '명동까지 가 주세요', yomi: 'ミョンドンカジ カ ジュセヨ'},
+        {ja: 'どのくらいかかりますか', ko: '얼마나 걸려요', yomi: 'オルマナ コルリョヨ'},
+        {ja: 'ここで降ります', ko: '여기서 내릴게요', yomi: 'ヨギソ ネリルケヨ'},
+        {ja: 'タクシーを呼んでください', ko: '택시 좀 불러 주세요', yomi: 'テクシ ジョム ブルロ ジュセヨ'},
+        {ja: 'この電車はどこ行きですか', ko: '이 열차는 어디행이에요', yomi: 'イ ヨルチャヌン オディヘンイエヨ'},
+        {ja: '乗り換えはどこでしますか', ko: '환승은 어디서 해요', yomi: 'ファンスンウン オディソ ヘヨ'},
+        {ja: 'トイレはどこですか', ko: '화장실이 어디예요', yomi: 'ファジャンシリ オディエヨ'},
+        {ja: 'ここはどこですか', ko: '여기가 어디예요', yomi: 'ヨギガ オディエヨ'},
+        {ja: '急いでください', ko: '서둘러 주세요', yomi: 'ソドゥルロ ジュセヨ'},
+        {ja: '道に迷いました', ko: '길을 잃었어요', yomi: 'キルル イロッソヨ'}
+      ]
+    },
+    {
+      cat: 'ホテル',
+      items: [
+        {ja: 'チェックインお願いします', ko: '체크인 해 주세요', yomi: 'チェクイン ヘ ジュセヨ'},
+        {ja: 'チェックアウトは何時ですか', ko: '체크아웃이 몇 시예요', yomi: 'チェクアウシ ミョッ シエヨ'},
+        {ja: 'Wi-Fiのパスワードは何ですか', ko: '와이파이 비밀번호가 뭐예요', yomi: 'ワイパイ ピミルボノガ モエヨ'},
+        {ja: '荷物を預かってもらえますか', ko: '짐 좀 맡아 주시겠어요', yomi: 'チム ジョム マタ ジュシゲッソヨ'},
+        {ja: 'タオルを追加でください', ko: '수건 좀 더 주세요', yomi: 'スゴン ジョム ト ジュセヨ'},
+        {ja: '部屋を変えてもらえますか', ko: '방을 바꿔 주시겠어요', yomi: 'パンウル バクォ ジュシゲッソヨ'},
+        {ja: 'お湯が出ません', ko: '뜨거운 물이 안 나와요', yomi: 'トゥゴウン ムリ アン ナワヨ'},
+        {ja: 'モーニングコールお願いします', ko: '모닝콜 부탁드려요', yomi: 'モニンコル プタクドゥリョヨ'},
+        {ja: '近くにコンビニはありますか', ko: '근처에 편의점이 있어요', yomi: 'クンチョエ ピョニジョミ イッソヨ'}
+      ]
+    },
+    {
+      cat: '緊急・トラブル',
+      items: [
+        {ja: '助けてください', ko: '도와주세요', yomi: 'トワジュセヨ'},
+        {ja: '警察を呼んでください', ko: '경찰을 불러 주세요', yomi: 'キョンチャルル ブルロ ジュセヨ'},
+        {ja: '救急車を呼んでください', ko: '구급차를 불러 주세요', yomi: 'クグプチャルル ブルロ ジュセヨ'},
+        {ja: '具合が悪いです', ko: '몸이 안 좋아요', yomi: 'モミ アン ジョアヨ'},
+        {ja: 'パスポートをなくしました', ko: '여권을 잃어버렸어요', yomi: 'ヨグォヌル イロボリョッソヨ'},
+        {ja: '財布を盗まれました', ko: '지갑을 도둑맞았어요', yomi: 'チガブル トドゥンマジャッソヨ'},
+        {ja: '病院はどこですか', ko: '병원이 어디예요', yomi: 'ピョンウォニ オディエヨ'},
+        {ja: '日本語通訳が必要です', ko: '일본어 통역이 필요해요', yomi: 'イルボノ トンヨギ ピリョヘヨ'},
+        {ja: 'ここが痛いです', ko: '여기가 아파요', yomi: 'ヨギガ アパヨ'},
+        {ja: '大使館に連絡したいです', ko: '대사관에 연락하고 싶어요', yomi: 'テサグァネ ヨルラカゴ シポヨ'}
+      ]
+    }
+  ],
+  checklist: [
+    {
+      cat: '必需品',
+      items: [
+        'パスポート',
+        '航空券(eチケット)',
+        'K-ETA・入国情報の控え',
+        'クレジットカード',
+        '現金(円)',
+        'スマホ・充電器',
+        '変換プラグ(SE/Cタイプ)',
+        '海外SIM・eSIM・Wi-Fiルーター',
+        '常備薬',
+        '海外旅行保険証'
+      ]
+    },
+    {
+      cat: 'あると便利',
+      items: [
+        'モバイルバッテリー',
+        'エコバッグ',
+        'ウェットティッシュ',
+        '圧縮袋',
+        '筆記用具',
+        '折りたたみ傘',
+        'サブバッグ(街歩き用の小さめバッグ)'
+      ]
+    },
+    {
+      cat: '出発前にやること',
+      items: [
+        'パスポートの有効期限を確認する',
+        'K-ETA申請(必要な場合)を済ませる',
+        '翻訳アプリをダウンロードする',
+        'NAVER MapとPapagoをダウンロードする',
+        '両替またはカードの海外利用設定をする',
+        'T-moneyカードの入手方法を確認する'
+      ]
+    }
+  ],
+  sizes: {
+    shoes: [
+      {jp: '22.0cm', kr: '220'},
+      {jp: '22.5cm', kr: '225'},
+      {jp: '23.0cm', kr: '230'},
+      {jp: '23.5cm', kr: '235'},
+      {jp: '24.0cm', kr: '240'},
+      {jp: '24.5cm', kr: '245'},
+      {jp: '25.0cm', kr: '250'},
+      {jp: '25.5cm', kr: '255'},
+      {jp: '26.0cm', kr: '260'},
+      {jp: '26.5cm', kr: '265'},
+      {jp: '27.0cm', kr: '270'},
+      {jp: '27.5cm', kr: '275'},
+      {jp: '28.0cm', kr: '280'}
+    ],
+    tops: [
+      {jp: 'S', kr: '90'},
+      {jp: 'M', kr: '95'},
+      {jp: 'L', kr: '100'},
+      {jp: 'XL', kr: '105'},
+      {jp: 'XXL', kr: '110'}
+    ]
+  },
+  info: [
+    {
+      title: '交通(T-money・地下鉄・タクシー)',
+      lines: [
+        'コンビニ(CU・GS25など)でT-moneyカードを購入・チャージできます',
+        '地下鉄・バス・タクシーで共通して使え乗り換え割引もあります',
+        '地下鉄は路線ごとに色分けされており英語表記もあります',
+        'タクシーは一般タクシー(白・銀)と模範タクシー(黒)があり後者は割高です',
+        'カカオTアプリで配車すると言葉の心配が少なくおすすめです'
+      ]
+    },
+    {
+      title: '電圧・プラグ',
+      lines: [
+        '韓国の電圧は220V、周波数は60Hzです',
+        'プラグ形状はSEタイプ(丸ピン2本)が主流でCタイプも使えます',
+        '日本の100V専用機器はそのまま使うと故障の恐れがあるため変圧器が必要です',
+        'スマホやPCの充電器の多くは100〜240V対応なので変換プラグのみでOKです',
+        'ホテルによっては変換プラグの貸し出しがある場合もあります'
+      ]
+    },
+    {
+      title: 'お金・チップ',
+      lines: [
+        '韓国はチップ不要の文化でホテルやタクシーでも基本的に不要です',
+        'カードが使える店が非常に多くほぼどこでもキャッシュレス決済が可能です',
+        '屋台や一部の小さな市場の店舗は現金のみの場合があります',
+        '空港や街中の両替所は銀行よりレートが良いことが多いです',
+        '少額の小銭やお札は屋台での支払いに便利なので持っておきましょう'
+      ]
+    },
+    {
+      title: '緊急連絡先',
+      lines: [
+        '警察 112',
+        '消防・救急 119',
+        '観光通訳案内(24時間対応) 1330',
+        '在大韓民国日本国大使館 +82-2-739-7400',
+        '外務省海外領事コールセンター +81-3-3580-3311'
+      ]
+    },
+    {
+      title: 'ネット環境',
+      lines: [
+        '空港カウンターや事前予約でeSIM・海外SIMが手軽に入手できます',
+        'ポケットWi-Fiルーターのレンタルは複数人での利用に便利です',
+        'カフェやコンビニなどフリーWi-Fiが使える場所も多くあります',
+        'フリーWi-Fi利用時はパスワードが必要な場合が多いので店員に確認しましょう'
+      ]
+    },
+    {
+      title: 'アプリ',
+      lines: [
+        'NAVER Map(ネイバー地図)は韓国国内の地図案内で最も正確です',
+        'Googleマップは韓国では地図規制の影響で経路検索の精度が低い場合があります',
+        'Papago(パパゴ)は韓国語翻訳アプリとして精度が高くおすすめです',
+        'カカオT(Kakao T)は配車アプリで日本のタクシーアプリ感覚で使えます',
+        'Klookやトリップドットコムなどで現地アクティビティの予約もできます'
+      ]
+    },
+    {
+      title: 'マナー・習慣',
+      lines: [
+        '目上の人にものを渡すときは両手で渡すのが丁寧とされています',
+        '地下鉄の優先席は空いていても座らないのが一般的なマナーです',
+        '食事中は器を持ち上げず置いたまま食べるのが基本的な作法です',
+        '目上の人と乾杯するときは杯を少し下げて飲むのが礼儀とされています',
+        'エスカレーターは急ぐ人のため片側を空けるのが暗黙の了解です'
+      ]
+    }
+  ]
+};
+/*KTT_DATA_END*/
+
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+
+function lsGet(key, fallback){
+  try{
+    const v = localStorage.getItem(key);
+    if(v === null) return fallback;
+    return JSON.parse(v);
+  }catch(e){ return fallback; }
+}
+function lsSet(key, val){
+  try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){}
+}
+function toNum(v){
+  const n = parseFloat(String(v).replace(/[^0-9.\-]/g,''));
+  return isFinite(n) && n >= 0 ? n : 0;
+}
+function fmt(n){
+  return Math.round(n).toLocaleString('ja-JP');
+}
+
+/* ---------- theme ---------- */
+(function initTheme(){
+  const saved = localStorage.getItem('ktt_theme');
+  if(saved === 'dark' || saved === 'light'){
+    document.documentElement.setAttribute('data-theme', saved);
+  }
+  updateThemeBtn();
+})();
+function updateThemeBtn(){
+  const cur = document.documentElement.getAttribute('data-theme');
+  const isDark = cur === 'dark' || (!cur && window.matchMedia('(prefers-color-scheme:dark)').matches);
+  $('#themeBtn').textContent = isDark ? '☀️' : '🌙';
+}
+$('#themeBtn').addEventListener('click', () => {
+  const cur = document.documentElement.getAttribute('data-theme');
+  const isDark = cur === 'dark' || (!cur && window.matchMedia('(prefers-color-scheme:dark)').matches);
+  const next = isDark ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('ktt_theme', next);
+  updateThemeBtn();
+});
+
+/* ---------- tabs ---------- */
+$$('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    $$('.tab-btn').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+    $$('.page').forEach(p => p.classList.remove('on'));
+    $('#page-' + btn.dataset.page).classList.add('on');
+  });
+});
+
+/* ---------- convert ---------- */
+let rate = lsGet('ktt_rate', 900);
+if(!rate || !isFinite(rate) || rate <= 0) rate = 900;
+$('#rateInput').value = rate;
+
+const krwInput = $('#krwInput');
+const jpyInput = $('#jpyInput');
+
+function krwToJpy(krw){ return krw * 100 / rate; }
+function jpyToKrw(jpy){ return jpy * rate / 100; }
+
+function setKrw(krw){
+  krwInput.value = krw > 0 ? fmt(krw) : '';
+  jpyInput.value = krw > 0 ? fmt(krwToJpy(krw)) : '';
+}
+function setJpy(jpy){
+  jpyInput.value = jpy > 0 ? fmt(jpy) : '';
+  krwInput.value = jpy > 0 ? fmt(jpyToKrw(jpy)) : '';
+}
+
+krwInput.addEventListener('input', () => {
+  const v = toNum(krwInput.value);
+  jpyInput.value = v > 0 ? fmt(krwToJpy(v)) : '';
+});
+jpyInput.addEventListener('input', () => {
+  const v = toNum(jpyInput.value);
+  krwInput.value = v > 0 ? fmt(jpyToKrw(v)) : '';
+});
+
+const rateToggleBtn = $('#rateToggleBtn');
+const rateEdit = $('#rateEdit');
+rateToggleBtn.addEventListener('click', () => {
+  rateEdit.classList.toggle('on');
+  rateToggleBtn.textContent = rateEdit.classList.contains('on') ? 'レートを編集 ▴' : 'レートを編集 ▾';
+});
+$('#rateInput').addEventListener('input', () => {
+  const v = toNum($('#rateInput').value);
+  if(v > 0){
+    rate = v;
+    lsSet('ktt_rate', rate);
+  }
+  renderPrices();
+  const krwVal = toNum(krwInput.value);
+  if(krwVal > 0) jpyInput.value = fmt(krwToJpy(krwVal));
+});
+
+const chipRow = $('#chipRow');
+[1000,5000,10000,50000].forEach(v => {
+  const c = document.createElement('button');
+  c.className = 'chip';
+  c.textContent = '₩' + v.toLocaleString('ja-JP');
+  c.addEventListener('click', () => setKrw(v));
+  chipRow.appendChild(c);
+});
+
+function renderPrices(){
+  const wrap = $('#priceList');
+  wrap.innerHTML = '';
+  (KTT_DATA.prices || []).forEach(p => {
+    const row = document.createElement('div');
+    row.className = 'price-item';
+    row.innerHTML = `<div class="price-name">${escapeHtml(p.label)}</div>
+      <div class="price-vals">
+        <div class="price-krw">₩${fmt(p.krw)}</div>
+        <div class="price-jpy">約¥${fmt(krwToJpy(p.krw))}</div>
+      </div>`;
+    wrap.appendChild(row);
+  });
+}
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+renderPrices();
+
+/* ---------- phrases ---------- */
+const canSpeak = 'speechSynthesis' in window;
+function renderPhrases(query){
+  const wrap = $('#phraseList');
+  wrap.innerHTML = '';
+  const q = (query || '').trim().toLowerCase();
+  let anyMatch = false;
+  (KTT_DATA.phrases || []).forEach(group => {
+    const items = (group.items || []).filter(it => {
+      if(!q) return true;
+      return (it.ja||'').toLowerCase().includes(q) ||
+             (it.ko||'').toLowerCase().includes(q) ||
+             (it.yomi||'').toLowerCase().includes(q);
+    });
+    if(items.length === 0) return;
+    anyMatch = true;
+    const title = document.createElement('div');
+    title.className = 'phrase-cat-title';
+    title.textContent = group.cat;
+    wrap.appendChild(title);
+    const grp = document.createElement('div');
+    grp.className = 'grp';
+    items.forEach(it => {
+      const row = document.createElement('div');
+      row.className = 'phrase-item';
+      row.innerHTML = `<div class="phrase-text">
+          <div class="phrase-ja">${escapeHtml(it.ja)}</div>
+          <div class="phrase-ko">${escapeHtml(it.ko)}</div>
+          <div class="phrase-yomi">${escapeHtml(it.yomi)}</div>
+        </div>` + (canSpeak ? `<button class="speak-btn" type="button">🔊</button>` : '');
+      row.addEventListener('click', (e) => {
+        if(e.target.closest('.speak-btn')) return;
+        showOverlay(it);
+      });
+      if(canSpeak){
+        row.querySelector('.speak-btn').addEventListener('click', (e) => {
+          e.stopPropagation();
+          try{
+            const u = new SpeechSynthesisUtterance(it.ko);
+            u.lang = 'ko-KR';
+            window.speechSynthesis.cancel();
+            window.speechSynthesis.speak(u);
+          }catch(err){}
+        });
+      }
+      grp.appendChild(row);
+    });
+    wrap.appendChild(grp);
+  });
+  if(!anyMatch){
+    const nores = document.createElement('div');
+    nores.className = 'no-results';
+    nores.textContent = '該当するフレーズが見つかりません';
+    wrap.appendChild(nores);
+  }
+}
+$('#phraseSearch').addEventListener('input', (e) => renderPhrases(e.target.value));
+renderPhrases('');
+
+function showOverlay(it){
+  $('#overlayKo').textContent = it.ko;
+  $('#overlayYomi').textContent = it.yomi;
+  $('#overlayJa').textContent = it.ja;
+  $('#phraseOverlay').classList.add('on');
+}
+$('#phraseOverlay').addEventListener('click', (e) => {
+  $('#phraseOverlay').classList.remove('on');
+});
+
+/* ---------- budget ---------- */
+const budgetFields = [
+  {key:'stay', label:'宿泊'},
+  {key:'meal', label:'食事'},
+  {key:'transport', label:'交通'},
+  {key:'sightseeing', label:'観光'},
+  {key:'shopping', label:'買い物'}
+];
+const defaultBudget = {days:3, stay:80000, meal:30000, transport:10000, sightseeing:20000, shopping:20000};
+let budget = lsGet('ktt_budget', defaultBudget);
+if(typeof budget !== 'object' || budget === null) budget = Object.assign({}, defaultBudget);
+budgetFields.forEach(f => { if(!isFinite(budget[f.key]) || budget[f.key] < 0) budget[f.key] = defaultBudget[f.key]; });
+if(!isFinite(budget.days) || budget.days <= 0) budget.days = defaultBudget.days;
+
+function renderBudgetInputs(){
+  $('#bDays').value = budget.days;
+  const wrap = $('#budgetItems');
+  wrap.innerHTML = '';
+  budgetFields.forEach(f => {
+    const row = document.createElement('div');
+    row.className = 'row';
+    row.innerHTML = `<div class="rl">${f.label}</div>
+      <div class="ri"><input type="text" inputmode="numeric" data-key="${f.key}" value="${budget[f.key]}"><span class="ru">₩</span></div>`;
+    wrap.appendChild(row);
+  });
+  wrap.querySelectorAll('input').forEach(inp => {
+    inp.addEventListener('input', () => {
+      budget[inp.dataset.key] = toNum(inp.value);
+      lsSet('ktt_budget', budget);
+      updateBudgetTotal();
+    });
+  });
+}
+$('#bDays').addEventListener('input', () => {
+  const v = toNum($('#bDays').value);
+  budget.days = v > 0 ? v : 1;
+  lsSet('ktt_budget', budget);
+  updateBudgetTotal();
+});
+
+function updateBudgetTotal(){
+  const perDay = budgetFields.reduce((s,f) => s + toNum(budget[f.key]), 0);
+  const days = budget.days > 0 ? budget.days : 1;
+  const totalKrw = perDay * days;
+  $('#bTotalJpy').textContent = '¥' + fmt(krwToJpy(totalKrw));
+  $('#bTotalKrw').textContent = '₩' + fmt(totalKrw);
+  $('#bTotalDay').textContent = `1日あたり ¥${fmt(krwToJpy(perDay))} / ₩${fmt(perDay)}`;
+}
+renderBudgetInputs();
+updateBudgetTotal();
+
+/* ---------- checklist ---------- */
+let ckState = lsGet('ktt_checklist_state', {});
+if(typeof ckState !== 'object' || ckState === null) ckState = {};
+let customItems = lsGet('ktt_custom_items', []);
+if(!Array.isArray(customItems)) customItems = [];
+
+function allChecklistEntries(){
+  const entries = [];
+  (KTT_DATA.checklist || []).forEach(group => {
+    (group.items || []).forEach(text => entries.push({cat: group.cat, text, custom:false}));
+  });
+  customItems.forEach(text => entries.push({cat: 'カスタム', text, custom:true}));
+  return entries;
+}
+function ckKey(cat, text){ return cat + '|' + text; }
+
+function renderChecklist(){
+  const body = $('#checklistBody');
+  body.innerHTML = '';
+  const groups = (KTT_DATA.checklist || []).map(g => ({cat:g.cat, items:g.items, custom:false}));
+  if(customItems.length){
+    groups.push({cat:'カスタム', items: customItems, custom:true});
+  }
+  groups.forEach(g => {
+    if(!g.items || g.items.length === 0) return;
+    const title = document.createElement('div');
+    title.className = 'check-cat-title';
+    title.textContent = g.cat;
+    body.appendChild(title);
+    const grp = document.createElement('div');
+    grp.className = 'grp';
+    g.items.forEach(text => {
+      const key = ckKey(g.cat, text);
+      const checked = !!ckState[key];
+      const row = document.createElement('div');
+      row.className = 'check-item' + (checked ? ' done' : '');
+      const id = 'ck_' + btoa(unescape(encodeURIComponent(key))).replace(/[^a-zA-Z0-9]/g,'');
+      row.innerHTML = `<input type="checkbox" id="${id}" ${checked ? 'checked' : ''}>
+        <label for="${id}">${escapeHtml(text)}</label>` +
+        (g.custom ? `<button class="check-del" type="button" title="削除">🗑</button>` : '');
+      row.querySelector('input').addEventListener('change', (e) => {
+        ckState[key] = e.target.checked;
+        lsSet('ktt_checklist_state', ckState);
+        row.classList.toggle('done', e.target.checked);
+        updateProgress();
+      });
+      if(g.custom){
+        row.querySelector('.check-del').addEventListener('click', () => {
+          customItems = customItems.filter(t => t !== text);
+          delete ckState[key];
+          lsSet('ktt_custom_items', customItems);
+          lsSet('ktt_checklist_state', ckState);
+          renderChecklist();
+        });
+      }
+      grp.appendChild(row);
+    });
+    body.appendChild(grp);
+  });
+  updateProgress();
+}
+function updateProgress(){
+  const entries = allChecklistEntries();
+  const total = entries.length;
+  const done = entries.filter(e => ckState[ckKey(e.cat, e.text)]).length;
+  $('#ckProgressTxt').textContent = `${done}/${total}`;
+  $('#ckProgressFill').style.width = total > 0 ? Math.round(done/total*100) + '%' : '0%';
+}
+$('#ckAddBtn').addEventListener('click', () => {
+  const inp = $('#ckAddInput');
+  const v = inp.value.trim();
+  if(!v) return;
+  customItems.push(v);
+  lsSet('ktt_custom_items', customItems);
+  inp.value = '';
+  renderChecklist();
+});
+$('#ckAddInput').addEventListener('keydown', (e) => {
+  if(e.key === 'Enter') $('#ckAddBtn').click();
+});
+$('#ckResetBtn').addEventListener('click', () => {
+  if(!confirm('チェックを全てリセットしますか？')) return;
+  ckState = {};
+  lsSet('ktt_checklist_state', ckState);
+  renderChecklist();
+});
+renderChecklist();
+
+/* ---------- info ---------- */
+function renderInfo(){
+  const wrap = $('#infoCards');
+  wrap.innerHTML = '';
+  (KTT_DATA.info || []).forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    const lines = (item.lines || []).map(l => escapeHtml(l)).join('<br>');
+    card.innerHTML = `<div class="card-title">${escapeHtml(item.title)}</div><div class="info-lines">${lines}</div>`;
+    wrap.appendChild(card);
+  });
+  const shoeBody = $('#shoeTable');
+  shoeBody.innerHTML = '';
+  ((KTT_DATA.sizes || {}).shoes || []).forEach(s => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${escapeHtml(s.jp)}</td><td>${escapeHtml(s.kr)}</td>`;
+    shoeBody.appendChild(tr);
+  });
+  const topBody = $('#topTable');
+  topBody.innerHTML = '';
+  ((KTT_DATA.sizes || {}).tops || []).forEach(s => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${escapeHtml(s.jp)}</td><td>${escapeHtml(s.kr)}</td>`;
+    topBody.appendChild(tr);
+  });
+}
+renderInfo();
+</script>
+</body>
+</html>
