@@ -46,7 +46,7 @@ Phase 3 の最後と Phase 5 の直前で十分です。
 Python なら `assert` を並べた 1 ファイルで足ります。
 
 ```js
-// tests/calc.test.mjs   →   node --test tests/
+// tests/calc.test.mjs   →   node --test tests/*.test.mjs
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadApp } from './generated/load.mjs';
@@ -61,6 +61,9 @@ test('金利0%でも壊れない', () => {
   assert.equal(app.mp(3000, 0, 35), 3000 / 420);
 });
 ```
+
+`node --test` にディレクトリを渡すと Node 22 では「モジュールが見つからない」で落ちるので、
+グロブ（`tests/*.test.mjs`）で渡します。
 
 重要なのは網羅率ではなく、**Phase 0 で決めた判定文が実行可能になっていること** です。
 1 本目が動けば 2 本目以降は数十秒で増えます。

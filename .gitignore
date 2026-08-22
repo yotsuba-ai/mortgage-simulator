@@ -1,0 +1,4 @@
+# index.html から生成される写し。npm test が毎回作り直すのでコミットしない
+# （古い写しに対して緑になるのを防ぐため）
+tests/generated/
+node_modules/
