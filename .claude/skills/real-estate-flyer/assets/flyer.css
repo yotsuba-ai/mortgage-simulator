@@ -1,0 +1,288 @@
+/* ===========================================================
+   real-estate-flyer : A4 印刷用チラシ スタイル
+   - 単位は mm / pt 中心。画面表示とプリンタ出力を一致させる。
+   - 情報量は .page[data-tier] で段階的に増減する（枠が小さいほど削る）。
+   =========================================================== */
+
+@page { size: A4 portrait; margin: 0; }
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { background: #e9ecef; }
+
+body {
+  font-family: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic",
+               "Noto Sans JP", "Meiryo", sans-serif;
+  color: var(--ink);
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+  font-feature-settings: "palt" 1;
+}
+
+:root {
+  --ink: #16181d;
+  --ink-sub: #5b6270;
+  --line: #d6dae1;
+  --line-strong: #aeb5c0;
+  --bg-soft: #f4f6f9;
+  --accent: #0b57a4;
+  --accent-ink: #ffffff;
+  --price: #c8102e;
+}
+/* テーマ（--theme で切替。チラシの印象を決めるのは価格色と帯色だけなので2色に絞る） */
+[data-theme="red"]   { --accent: #b3121f; --price: #b3121f; }
+[data-theme="navy"]  { --accent: #16305c; --price: #c8102e; }
+[data-theme="green"] { --accent: #16653f; --price: #c05600; }
+[data-theme="warm"]  { --accent: #8a5a1c; --price: #c8102e; }
+[data-theme="mono"]  { --accent: #2b2f36; --price: #2b2f36; }
+
+/* ---------- ページ ---------- */
+.page {
+  position: relative;
+  width: 210mm;
+  height: 297mm;
+  padding: 7mm;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  page-break-after: always;
+  break-after: page;
+}
+.page:last-of-type { page-break-after: auto; break-after: auto; }
+
+@media screen {
+  body { padding: 8mm 0; display: flex; flex-direction: column; align-items: center; gap: 8mm; }
+  .page { box-shadow: 0 2px 12px rgba(0,0,0,.18); }
+}
+
+/* ---------- ヘッダー ---------- */
+.head {
+  display: flex; align-items: center; gap: 3mm;
+  border-bottom: 0.8mm solid var(--accent);
+  padding-bottom: 1.6mm; margin-bottom: 2.5mm;
+  flex: 0 0 auto;
+}
+.head-title { font-size: 15pt; font-weight: 800; letter-spacing: .02em; line-height: 1.15; }
+.head-sub   { font-size: 8.5pt; color: var(--ink-sub); margin-top: .6mm; }
+.head-badge {
+  margin-left: auto; flex: 0 0 auto; text-align: right;
+  font-size: 8pt; color: var(--ink-sub); line-height: 1.35;
+}
+.head-badge b { display: block; font-size: 10.5pt; color: var(--ink); }
+.page[data-tier="mini"] .head-title,
+.page[data-tier="compact"] .head-title { font-size: 13pt; }
+
+/* ---------- グリッド ---------- */
+.grid {
+  flex: 1 1 auto;
+  display: grid;
+  gap: 2.5mm;
+  min-height: 0;
+  overflow: hidden;
+}
+.page[data-cols="1"] .grid { grid-template-columns: minmax(0,1fr); }
+.page[data-cols="2"] .grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+.page[data-cols="3"] .grid { grid-template-columns: repeat(3, minmax(0,1fr)); }
+.page[data-rows="1"] .grid { grid-template-rows: repeat(1, minmax(0,1fr)); }
+.page[data-rows="2"] .grid { grid-template-rows: repeat(2, minmax(0,1fr)); }
+.page[data-rows="3"] .grid { grid-template-rows: repeat(3, minmax(0,1fr)); }
+.page[data-rows="4"] .grid { grid-template-rows: repeat(4, minmax(0,1fr)); }
+
+/* ---------- カード ---------- */
+.card {
+  border: 0.35mm solid var(--line-strong);
+  border-radius: 1.5mm;
+  overflow: hidden;
+  display: flex;
+  min-width: 0; min-height: 0;
+  background: #fff;
+}
+.card-media { flex: 0 0 auto; display: flex; gap: 1mm; background: var(--bg-soft); overflow: hidden; }
+.card-body  { flex: 1 1 auto; min-width: 0; min-height: 0; overflow: hidden;
+              display: flex; flex-direction: column; padding: 1.8mm 2.2mm; gap: 1.2mm; }
+
+.frame { position: relative; overflow: hidden; background: #eef1f5; }
+.frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.frame.plan img { object-fit: contain; background: #fff; }
+.ph {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  color: #9aa2af; font-size: 8pt; letter-spacing: .1em;
+  border: 0.3mm dashed #b9c0cb; background: repeating-linear-gradient(
+      45deg, #f2f4f7 0 3mm, #eaeef3 3mm 6mm);
+}
+
+/* 縮小の優先順位: 概要表 > チップ。キャッチ・価格・アピール・法定表示は縮めない。
+   文章が途中で切れた広告は用をなさないので、削られるのは表側から。 */
+.card-body > * { flex: 0 0 auto; }
+.card-body > .chips, .card-body > .spec-wrap { flex: 0 1 auto; min-height: 0; overflow: hidden; }
+
+/* 種別タグ + キャッチ */
+.cat {
+  display: inline-block; align-self: flex-start;
+  background: var(--accent); color: var(--accent-ink);
+  font-size: 7.5pt; font-weight: 700; line-height: 1;
+  padding: 1mm 1.8mm; border-radius: .8mm; letter-spacing: .04em;
+}
+.catch {
+  font-size: 11pt; font-weight: 800; line-height: 1.25;
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden;
+}
+.name { font-size: 8.5pt; color: var(--ink-sub); line-height: 1.25;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* 価格 : チラシで最も強い要素 */
+.price { display: flex; align-items: baseline; gap: .6mm; color: var(--price); line-height: 1; }
+.price .num  { font-size: 24pt; font-weight: 800; letter-spacing: -.01em; }
+.price .unit { font-size: 12pt; font-weight: 800; }
+.price .note { font-size: 7.5pt; font-weight: 600; color: var(--ink-sub); margin-left: 1mm; }
+.price .yield { margin-left: auto; font-size: 9pt; font-weight: 800; color: var(--accent);
+                white-space: nowrap; }
+
+/* 主要スペック（横並びチップ） */
+.chips { display: flex; flex-wrap: wrap; gap: 1mm; }
+.chip {
+  font-size: 8pt; line-height: 1.15; padding: .9mm 1.6mm;
+  border: 0.3mm solid var(--line); border-radius: .8mm; background: var(--bg-soft);
+  white-space: nowrap;
+}
+.chip b { font-weight: 800; }
+
+/* 詳細スペック表 */
+.specs { display: grid; grid-template-columns: auto 1fr; gap: 0 2mm; font-size: 8pt; line-height: 1.45; }
+.specs dt { color: var(--ink-sub); white-space: nowrap; }
+.specs dd { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.page[data-tier="full"] .specs { font-size: 9pt; }
+
+.specs-table { width: 100%; border-collapse: collapse; font-size: 9pt; }
+.specs-table th, .specs-table td {
+  border: 0.3mm solid var(--line); padding: 1.1mm 1.8mm; text-align: left; vertical-align: top;
+  line-height: 1.35;
+}
+.specs-table th { background: var(--bg-soft); color: var(--ink-sub); font-weight: 600; white-space: nowrap; width: 22mm; }
+.specs-table.two-col { table-layout: fixed; }
+.specs-table.two-col th { width: 20mm; font-size: 8pt; white-space: normal; }
+.specs-table.two-col td { font-size: 8pt; word-break: break-word; }
+.specs-table .empty { background: #fff; border-color: transparent; }
+
+/* アピールポイント */
+.points { list-style: none; display: flex; flex-direction: column; gap: .7mm; font-size: 8.5pt; line-height: 1.3; }
+.points li { padding-left: 3.4mm; position: relative; }
+.points li::before {
+  content: "✓"; position: absolute; left: 0; top: 0;
+  color: var(--accent); font-weight: 800;
+}
+
+/* 所在地・交通・取引態様（法定表示を含む足元の行） */
+.meta {
+  flex: 0 0 auto; margin-top: auto; border-top: 0.3mm solid var(--line); padding-top: 1mm;
+  font-size: 7.5pt; line-height: 1.35; color: var(--ink-sub);
+  display: flex; flex-wrap: wrap; gap: 0 2.5mm;
+}
+.meta b { color: var(--ink); font-weight: 700; }
+.meta .tt { margin-left: auto; white-space: nowrap; }
+
+/* ---------- ティア別の寸法 ---------- */
+/* full : 1面。写真を大きく、概要表と地図まで載せる */
+.page[data-tier="full"] .card { flex-direction: column; border: none; }
+.page[data-tier="full"] .card-media { height: 92mm; }
+.page[data-tier="full"] .frame.photo { flex: 1 1 62%; }
+.page[data-tier="full"] .frame.plan  { flex: 1 1 38%; }
+.page[data-tier="full"] .card-body { padding: 3mm 0 0; gap: 2.2mm; }
+.page[data-tier="full"] .catch { font-size: 20pt; -webkit-line-clamp: 2; }
+.page[data-tier="full"] .name  { font-size: 11pt; }
+.page[data-tier="full"] .price .num { font-size: 40pt; }
+.page[data-tier="full"] .price .unit { font-size: 18pt; }
+.page[data-tier="full"] .price .yield { font-size: 13pt; }
+.page[data-tier="full"] .points { font-size: 10.5pt; gap: 1.2mm; }
+.page[data-tier="full"] .chip { font-size: 9.5pt; }
+.page[data-tier="full"] .cat { font-size: 9.5pt; }
+.page[data-tier="full"] .meta { font-size: 8.5pt; }
+.page[data-tier="full"] .full-cols { display: grid; grid-template-columns: 1.15fr 1fr; gap: 4mm;
+  min-height: 0; flex: 1 1 auto; overflow: hidden; }
+.page[data-tier="full"] .full-cols > * { min-height: 0; overflow: hidden; }
+.page[data-tier="full"] .spec-wrap { min-height: 0; overflow: hidden; }
+.page[data-tier="full"] .specs-table { font-size: 8.5pt; }
+
+/* large : 2〜3面。左に写真と間取図を縦積み、右にスペックと概要表 */
+.page[data-tier="large"] .card { flex-direction: row; }
+.page[data-tier="large"] .card-media { width: 82mm; flex-direction: column; }
+.page[data-tier="large"] .frame.photo { flex: 1 1 60%; }
+.page[data-tier="large"] .frame.plan  { flex: 1 1 40%; }
+.page[data-tier="large"] .catch { font-size: 14pt; }
+.page[data-tier="large"] .name  { font-size: 9pt; }
+.page[data-tier="large"] .price .num { font-size: 30pt; }
+.page[data-tier="large"] .price .unit { font-size: 14pt; }
+.page[data-tier="large"] .points { font-size: 9pt; }
+.page[data-tier="large"] .chip { font-size: 8.5pt; }
+.page[data-tier="large"] .cat { font-size: 8.5pt; }
+.page[data-tier="large"] .specs-table { font-size: 7.5pt; }
+.page[data-tier="large"] .specs-table th { width: 18mm; font-size: 7.5pt; white-space: normal; }
+.page[data-tier="large"] .specs-table td { font-size: 7.5pt; }
+.page[data-tier="large"] .specs-table th, .page[data-tier="large"] .specs-table td { padding: .7mm 1.2mm; }
+
+/* medium : 4〜6面。写真＋間取図を上に、下にスペック */
+.page[data-tier="medium"] .card { flex-direction: column; }
+.page[data-tier="medium"] .card-media { height: 39%; }
+.page[data-tier="medium"] .frame.photo { flex: 1 1 60%; }
+.page[data-tier="medium"] .frame.plan  { flex: 1 1 40%; }
+.page[data-tier="medium"] .catch { font-size: 10.5pt; }
+.page[data-tier="medium"] .price .num { font-size: 21pt; }
+
+/* compact : 8〜9面。写真1枚＋価格・要点のみ */
+.page[data-tier="compact"] .card { flex-direction: row; }
+.page[data-tier="compact"] .card-media { width: 30mm; }
+.page[data-tier="compact"] .frame.photo { flex: 1 1 100%; }
+.page[data-tier="compact"] .card-body { padding: 1.4mm 1.8mm; gap: .8mm; }
+.page[data-tier="compact"] .catch { font-size: 9pt; -webkit-line-clamp: 1; }
+.page[data-tier="compact"] .price .num { font-size: 17pt; }
+.page[data-tier="compact"] .price .unit { font-size: 9.5pt; }
+.page[data-tier="compact"] .chip { font-size: 7.5pt; padding: .7mm 1.2mm; }
+.page[data-tier="compact"] .cat { font-size: 7pt; }
+.page[data-tier="compact"] .meta { font-size: 7pt; }
+
+/* mini : 12面。文字情報のみ。価格と駅距離が読めれば役割は果たす */
+.page[data-tier="mini"] .card { flex-direction: column; }
+.page[data-tier="mini"] .card-media { height: 22mm; }
+.page[data-tier="mini"] .frame.photo { flex: 1 1 100%; }
+.page[data-tier="mini"] .card-body { padding: 1.2mm 1.5mm; gap: .6mm; }
+.page[data-tier="mini"] .catch { font-size: 8pt; -webkit-line-clamp: 1; }
+.page[data-tier="mini"] .name { font-size: 7.5pt; }
+.page[data-tier="mini"] .price .num { font-size: 15pt; }
+.page[data-tier="mini"] .price .unit { font-size: 8.5pt; }
+.page[data-tier="mini"] .price .note { display: none; }
+.page[data-tier="mini"] .chip { font-size: 7pt; padding: .6mm 1mm; }
+.page[data-tier="mini"] .cat { font-size: 6.5pt; padding: .7mm 1.2mm; }
+.page[data-tier="mini"] .meta { font-size: 6.5pt; }
+
+/* ---------- 余り枠 ---------- */
+.filler {
+  border: 0.35mm dashed var(--line-strong); border-radius: 1.5mm;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 1.5mm; text-align: center; padding: 3mm; background: var(--bg-soft);
+}
+.filler .f-lead { font-size: 9pt; color: var(--ink-sub); line-height: 1.4; }
+.filler .f-name { font-size: 12pt; font-weight: 800; }
+.filler .f-tel  { font-size: 18pt; font-weight: 800; color: var(--accent); letter-spacing: .01em; }
+.filler .f-note { font-size: 7.5pt; color: var(--ink-sub); line-height: 1.4; }
+.filler.blank { background: #fff; border-style: dashed; opacity: .45; }
+
+/* ---------- フッター（事業者表示：法定） ---------- */
+.foot {
+  flex: 0 0 auto; margin-top: 2.5mm; padding-top: 1.8mm;
+  border-top: 0.5mm solid var(--accent);
+  display: flex; flex-wrap: nowrap; align-items: center; gap: 3mm;
+}
+.foot-co { flex: 1 1 auto; min-width: 0; }
+.foot-co .co-name { font-size: 11pt; font-weight: 800; line-height: 1.2; }
+.foot-co .co-line { font-size: 7.5pt; color: var(--ink-sub); line-height: 1.4;
+                    overflow: hidden; text-overflow: ellipsis; }
+.foot-tel { margin-left: auto; text-align: right; flex: 0 0 auto; }
+.foot-tel .t-lead { font-size: 7.5pt; color: var(--ink-sub); }
+.foot-tel .t-num  { font-size: 18pt; font-weight: 800; color: var(--accent); line-height: 1.1; }
+.disclaimer {
+  flex: 0 0 auto; font-size: 6.5pt; color: var(--ink-sub); line-height: 1.35;
+  margin-top: 2mm; padding-top: 1mm; border-top: 0.3mm solid var(--line);
+}
+.foot-wrap { flex: 0 0 auto; }

@@ -1,0 +1,220 @@
+{
+  "company": {
+    "name": "株式会社ヨツバ不動産",
+    "license": "東京都知事(3)第123456号",
+    "tel": "0120-000-000",
+    "tel_lead": "お問い合わせ・ご見学のご予約はこちら",
+    "address": "東京都杉並区荻窪5-1-1 荻窪ビル3F",
+    "hours": "9:30〜18:30（水曜定休）",
+    "url": "https://example.co.jp"
+  },
+  "flyer": {
+    "title": "荻窪・西荻窪エリア 売却物件のご案内",
+    "subtitle": "オープンハウス同時開催／ご予約不要でご覧いただけます",
+    "badge": "2026年9月号",
+    "theme": "blue"
+  },
+  "properties": [
+    {
+      "name": "グランドヒルズ荻窪 505号室",
+      "category": "中古マンション",
+      "catch": "南向き角部屋。全面リフォーム済みですぐに住める3LDK",
+      "price": 34800000,
+      "price_note": "税込",
+      "address": "東京都杉並区荻窪4-30-12",
+      "access": [
+        {
+          "line": "JR中央線",
+          "station": "荻窪",
+          "minutes": 8,
+          "means": "徒歩"
+        },
+        {
+          "line": "東京メトロ丸ノ内線",
+          "station": "南阿佐ケ谷",
+          "minutes": 12,
+          "means": "徒歩"
+        }
+      ],
+      "layout": "3LDK",
+      "area_exclusive": 68.52,
+      "balcony": 9.8,
+      "built": "1998年3月",
+      "structure": "鉄筋コンクリート造 地上10階建",
+      "floor": "5階／10階建",
+      "management_fee": 12800,
+      "repair_reserve": 8600,
+      "land_rights": "所有権",
+      "current_status": "空家",
+      "delivery": "相談",
+      "transaction_type": "媒介（専任）",
+      "points": [
+        "2025年12月に内装全面リフォーム済み",
+        "全居室に収納、対面キッチン",
+        "小学校まで徒歩5分",
+        "宅配ボックス・オートロック付"
+      ],
+      "notes": "ペット飼育可（管理規約による）"
+    },
+    {
+      "name": "西荻窪 中古戸建",
+      "category": "中古戸建",
+      "catch": "駐車2台・南庭付き。閑静な住宅街の4LDK",
+      "price": 62800000,
+      "price_note": "税込",
+      "address": "東京都杉並区西荻南3-15-4",
+      "access": [
+        {
+          "line": "JR中央線",
+          "station": "西荻窪",
+          "minutes": 11,
+          "means": "徒歩"
+        }
+      ],
+      "layout": "4LDK",
+      "area_exclusive": 104.33,
+      "area_land": 118.2,
+      "built": "2012年6月",
+      "structure": "木造2階建",
+      "land_rights": "所有権",
+      "use_district": "第一種低層住居専用地域",
+      "coverage_ratio": "50％／100％",
+      "road": "南側 公道 幅員5.0m 接面9.2m",
+      "private_road": "無",
+      "current_status": "居住中",
+      "delivery": "相談",
+      "transaction_type": "媒介（一般）",
+      "points": [
+        "カースペース2台分",
+        "南面約12帖の庭",
+        "太陽光パネル設置済み"
+      ]
+    },
+    {
+      "name": "阿佐ヶ谷 売地",
+      "category": "売地",
+      "catch": "整形地・建築条件なし。お好きな住宅メーカーで建てられます",
+      "price": 48000000,
+      "price_note": "税込",
+      "address": "東京都杉並区阿佐谷北2-8-1",
+      "access": [
+        {
+          "line": "JR中央線",
+          "station": "阿佐ケ谷",
+          "minutes": 9,
+          "means": "徒歩"
+        }
+      ],
+      "area_land": 96.44,
+      "use_district": "第一種中高層住居専用地域",
+      "coverage_ratio": "60％／200％",
+      "road": "東側 公道 幅員6.0m 接面8.0m",
+      "private_road": "無",
+      "building_condition": "無（建築条件なし）",
+      "current_status": "更地",
+      "delivery": "即時",
+      "transaction_type": "売主",
+      "points": [
+        "建築条件なしの整形地",
+        "上下水道・都市ガス引込済み"
+      ]
+    },
+    {
+      "name": "高円寺 一棟アパート",
+      "category": "収益物件",
+      "catch": "駅徒歩6分・全8戸。安定稼働中の一棟収益",
+      "price": 118000000,
+      "price_note": "税込",
+      "address": "東京都杉並区高円寺北3-22-7",
+      "access": [
+        {
+          "line": "JR中央線",
+          "station": "高円寺",
+          "minutes": 6,
+          "means": "徒歩"
+        }
+      ],
+      "area_exclusive": 196.8,
+      "area_land": 132.5,
+      "built": "2006年9月",
+      "structure": "木造2階建 全8戸",
+      "income_annual": 8640000,
+      "yield_gross": 7.32,
+      "yield_label": "表面利回り（満室想定）",
+      "land_rights": "所有権",
+      "current_status": "賃貸中（稼働率100％）",
+      "delivery": "相談",
+      "transaction_type": "媒介（専属専任）",
+      "points": [
+        "現況満室、レントロール開示可",
+        "1Kタイプ8戸で入替えが早い"
+      ]
+    },
+    {
+      "name": "浜田山 中古マンション 302号室",
+      "category": "中古マンション",
+      "catch": "駅徒歩4分。管理良好な低層レジデンス",
+      "price": 42900000,
+      "price_note": "税込",
+      "address": "東京都杉並区浜田山2-4-9",
+      "access": [
+        {
+          "line": "京王井の頭線",
+          "station": "浜田山",
+          "minutes": 4,
+          "means": "徒歩"
+        }
+      ],
+      "layout": "2LDK",
+      "area_exclusive": 55.16,
+      "balcony": 6.2,
+      "built": "2005年11月",
+      "structure": "鉄筋コンクリート造 地上5階建",
+      "floor": "3階／5階建",
+      "management_fee": 9800,
+      "repair_reserve": 7400,
+      "land_rights": "所有権",
+      "current_status": "空家",
+      "delivery": "即時",
+      "transaction_type": "媒介（専任）",
+      "points": [
+        "日勤管理・修繕履歴の開示可",
+        "スーパーまで徒歩2分"
+      ]
+    },
+    {
+      "name": "久我山 新築戸建 B号棟",
+      "category": "新築戸建",
+      "catch": "全2棟の南向き。長期優良住宅・省エネ基準適合",
+      "price": 78800000,
+      "price_note": "税込",
+      "address": "東京都杉並区久我山4-11-2",
+      "access": [
+        {
+          "line": "京王井の頭線",
+          "station": "久我山",
+          "minutes": 7,
+          "means": "徒歩"
+        }
+      ],
+      "layout": "4LDK",
+      "area_exclusive": 98.12,
+      "area_land": 105.6,
+      "built": "2026年7月",
+      "structure": "木造2階建",
+      "use_district": "第一種低層住居専用地域",
+      "coverage_ratio": "50％／100％",
+      "road": "西側 公道 幅員4.5m 接面7.8m",
+      "current_status": "完成済（未入居）",
+      "delivery": "即時",
+      "transaction_type": "売主",
+      "points": [
+        "長期優良住宅認定取得",
+        "食洗機・浴室乾燥機を標準装備",
+        "カースペース1台分"
+      ],
+      "building_condition": "無（建築条件なし・完成済）",
+      "private_road": "無"
+    }
+  ]
+}
