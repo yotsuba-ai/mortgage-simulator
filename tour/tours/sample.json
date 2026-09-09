@@ -1,0 +1,47 @@
+{
+  "title": "サンプル物件 2LDK（デモ）",
+  "defaultScene": "living",
+  "autoRotate": 2,
+  "autoRotateDelay": 4000,
+  "hfov": 95,
+  "floorplan": { "src": "../images/floorplan.png" },
+  "scenes": [
+    {
+      "id": "living",
+      "name": "リビング",
+      "src": "../images/living.jpg",
+      "yaw": 0,
+      "pitch": 0,
+      "plan": { "x": 0.479, "y": 0.5, "rotation": 0 },
+      "hotspots": [
+        { "type": "scene", "target": "kitchen", "yaw": 90, "pitch": -2, "text": "キッチンへ", "targetYaw": 0 },
+        { "type": "scene", "target": "bedroom", "yaw": -90, "pitch": -2, "text": "寝室へ", "targetYaw": 0 },
+        { "type": "info", "yaw": 0, "pitch": 6, "title": "南向きの大きな窓", "text": "南向き・日当たり良好。窓の外はバルコニーです。" }
+      ]
+    },
+    {
+      "id": "kitchen",
+      "name": "キッチン",
+      "src": "../images/kitchen.jpg",
+      "yaw": 0,
+      "pitch": 0,
+      "plan": { "x": 0.8, "y": 0.5, "rotation": 90 },
+      "hotspots": [
+        { "type": "scene", "target": "living", "yaw": 180, "pitch": -3, "text": "リビングへ", "targetYaw": 90 },
+        { "type": "info", "yaw": 0, "pitch": 4, "title": "システムキッチン", "text": "食洗機・IHクッキングヒーター付き。" }
+      ]
+    },
+    {
+      "id": "bedroom",
+      "name": "寝室",
+      "src": "../images/bedroom.jpg",
+      "yaw": 0,
+      "pitch": 0,
+      "plan": { "x": 0.151, "y": 0.5, "rotation": -90 },
+      "hotspots": [
+        { "type": "scene", "target": "living", "yaw": 180, "pitch": -3, "text": "リビングへ", "targetYaw": -90 },
+        { "type": "info", "yaw": 90, "pitch": 0, "title": "クローゼット", "text": "幅2mのウォークインクローゼット。" }
+      ]
+    }
+  ]
+}

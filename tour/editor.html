@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>バーチャル内見 ツアーエディター</title>
+<link rel="stylesheet" href="viewer.css">
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Noto Sans JP',system-ui,sans-serif;font-size:13px;color:#111;background:#f4f5f7}
+  .app{display:flex;height:100%}
+  .side{width:360px;flex:0 0 360px;overflow-y:auto;background:#fff;border-right:1px solid #e0e2e8;padding:14px 14px 40px}
+  .main{flex:1;min-width:0;display:flex;flex-direction:column}
+  .main-bar{padding:8px 12px;background:#1a1d27;color:#fff;display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:12px}
+  .main-bar .mode{padding:4px 10px;border-radius:12px;background:#2e3248}
+  .main-bar .mode.on{background:#f59e0b;color:#111;font-weight:700}
+  #preview{flex:1;min-height:300px}
+  h1{font-size:16px;margin:0 0 4px}
+  h2{font-size:11px;letter-spacing:2px;color:#6b7280;text-transform:uppercase;margin:18px 0 8px;padding-bottom:4px;border-bottom:1px solid #e0e2e8}
+  .sub{font-size:11px;color:#6b7280;margin:0 0 8px}
+  label{display:block;font-size:11px;font-weight:600;color:#374151;margin:8px 0 3px}
+  input[type=text],input[type=number],input[type=url],select,textarea{width:100%;border:1px solid #c8cad2;border-radius:6px;padding:6px 8px;font-size:13px;font-family:inherit;background:#fff}
+  textarea{font-family:'SF Mono',Menlo,monospace;font-size:11px;min-height:120px;resize:vertical}
+  .row{display:flex;gap:6px;align-items:flex-end}
+  .row>*{flex:1;min-width:0}
+  .row.wrap{flex-wrap:wrap;align-items:center;margin-top:6px}
+  .row.wrap>*{flex:0 0 auto}
+  button{border:1px solid #c8cad2;background:#fff;border-radius:6px;padding:6px 10px;font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap}
+  button:hover{background:#f1f3f5}
+  button.primary{background:#2563eb;color:#fff;border-color:#2563eb;font-weight:700}
+  button.primary:hover{background:#1d4ed8}
+  button.warn{background:#fff7ed;border-color:#f59e0b;color:#92400e}
+  button.warn.on{background:#f59e0b;color:#111;font-weight:700}
+  button.danger{color:#b91c1c}
+  button.small{padding:3px 7px;font-size:11px}
+  .btns{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+  .list{border:1px solid #e0e2e8;border-radius:8px;overflow:hidden}
+  .item{display:flex;align-items:center;gap:6px;padding:7px 8px;border-bottom:1px solid #e0e2e8;cursor:pointer}
+  .item:last-child{border-bottom:none}
+  .item.active{background:#eff6ff}
+  .item .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+  .item .meta{font-size:10px;color:#6b7280;white-space:nowrap}
+  .item img{width:44px;height:28px;object-fit:cover;border-radius:4px;background:#ddd;flex:0 0 auto}
+  .hs{padding:8px;border:1px solid #e0e2e8;border-radius:8px;margin-bottom:6px;background:#fafafa}
+  .hs.active{border-color:#f59e0b;background:#fffbeb}
+  .hs .head{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+  .hs .head b{flex:1;font-size:12px}
+  .badge{font-size:10px;padding:2px 6px;border-radius:8px;background:#2563eb;color:#fff;font-weight:700}
+  .badge.info{background:#6b7280}
+  .plan-pick{position:relative;border:1px solid #e0e2e8;border-radius:6px;overflow:hidden;background:#fff;cursor:crosshair;margin-top:6px}
+  .plan-pick img{display:block;width:100%}
+  .plan-pick i{position:absolute;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;background:#2563eb;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.3)}
+  .note{font-size:11px;background:#fffbeb;border:1px solid #fde68a;color:#92400e;padding:8px;border-radius:6px;margin-top:8px;line-height:1.5}
+  code{background:#f1f3f5;padding:1px 4px;border-radius:3px;font-size:11px}
+  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(80px);background:rgba(17,19,24,.92);color:#fff;padding:8px 18px;border-radius:20px;font-size:12px;transition:transform .3s;z-index:99;pointer-events:none}
+  .toast.show{transform:translateX(-50%) translateY(0)}
+  @media (max-width:820px){.app{flex-direction:column;height:auto}.side{width:100%;flex:none;border-right:none;order:2}.main{order:1;height:60vh;min-height:320px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <h1>ツアーエディター</h1>
+    <p class="sub">RICOH THETA / RICOH360 の全天球画像から、部屋どうしを行き来できるバーチャル内見ツアーを作成します。作成内容はこのブラウザに自動保存されます。</p>
+
+    <h2>ツアー情報</h2>
+    <label>物件名・タイトル</label>
+    <input type="text" id="f-title" placeholder="例: ○○マンション 301号室">
+    <div class="row">
+      <div><label>自動回転 (度/秒, 0で無効)</label><input type="number" id="f-autorotate" step="0.5" min="0" max="20"></div>
+      <div><label>最初に表示するシーン</label><select id="f-default"></select></div>
+    </div>
+    <label>間取り図の画像URL (任意)</label>
+    <div class="row">
+      <input type="text" id="f-plan" placeholder="../images/floorplan.png">
+      <button type="button" id="f-plan-file-btn" class="small" style="flex:0 0 auto">ファイル…</button>
+      <input type="file" id="f-plan-file" accept="image/*" hidden>
+    </div>
+
+    <h2>シーン (部屋)</h2>
+    <div class="list" id="scene-list"></div>
+    <div class="btns">
+      <button type="button" id="add-scene" class="primary">＋ 画像を選んでシーン追加</button>
+      <button type="button" id="add-scene-url">URLで追加</button>
+      <input type="file" id="scene-files" accept="image/*" multiple hidden>
+    </div>
+    <div class="note">THETA で撮影した JPEG をそのまま選べます。書き出し時の画像パスは <code>../images/ファイル名</code> になるので、画像ファイルを <code>tour/images/</code> にアップロードしてください。</div>
+
+    <div id="scene-panel" hidden>
+      <h2>選択中のシーン</h2>
+      <div class="row">
+        <div><label>表示名</label><input type="text" id="s-name"></div>
+        <div><label>ID (英数字)</label><input type="text" id="s-id"></div>
+      </div>
+      <label>画像パス / URL</label>
+      <input type="text" id="s-src">
+      <div class="btns">
+        <button type="button" id="s-setview" class="primary">現在の視点を初期表示にする</button>
+        <button type="button" id="s-north" class="small">北の向きを現在の中央に設定</button>
+      </div>
+      <div class="sub" id="s-view" style="margin-top:6px"></div>
+      <div id="plan-pick-wrap" hidden>
+        <label>間取り図上の位置 (クリックで設定)</label>
+        <div class="plan-pick" id="plan-pick"><img id="plan-pick-img" alt=""><i id="plan-pick-dot" hidden></i></div>
+        <div class="row"><div><label>間取り図上の向き補正 (度)</label><input type="number" id="s-plan-rot" step="1" value="0"></div></div>
+      </div>
+
+      <h2>ホットスポット</h2>
+      <p class="sub">ボタンを押してから、右のパノラマ上でクリックした位置に追加されます。</p>
+      <div class="btns">
+        <button type="button" id="mode-scene" class="warn">🚪 移動ポイントを追加</button>
+        <button type="button" id="mode-info" class="warn">ℹ️ 情報ポイントを追加</button>
+      </div>
+      <div id="hs-list" style="margin-top:8px"></div>
+    </div>
+
+    <h2>書き出し / 埋め込み</h2>
+    <label>公開する tour フォルダのURL</label>
+    <input type="url" id="f-base" placeholder="https://example.github.io/mortgage-simulator/tour/">
+    <div class="row">
+      <div><label>設定ファイル名</label><input type="text" id="f-filename" value="mytour.json"></div>
+      <div><label>埋め込み高さ (px)</label><input type="number" id="f-height" value="480"></div>
+    </div>
+    <label>ツアー設定 JSON (tours/ フォルダに保存)</label>
+    <textarea id="out-json" readonly></textarea>
+    <div class="btns">
+      <button type="button" id="dl-json" class="primary">JSONをダウンロード</button>
+      <button type="button" id="copy-json">コピー</button>
+      <button type="button" id="import-json">JSONを読み込む…</button>
+      <input type="file" id="import-file" accept="application/json,.json" hidden>
+      <button type="button" id="reset" class="danger">初期化</button>
+    </div>
+    <label>ホームページ埋め込みコード (iframe)</label>
+    <textarea id="out-iframe" readonly style="min-height:80px"></textarea>
+    <div class="btns"><button type="button" id="copy-iframe">コピー</button><a id="open-preview" href="#" target="_blank" rel="noopener"><button type="button">公開URLを開く</button></a></div>
+    <label>スクリプト埋め込みコード (iframeを使わない場合)</label>
+    <textarea id="out-script" readonly style="min-height:80px"></textarea>
+    <div class="btns"><button type="button" id="copy-script">コピー</button></div>
+  </aside>
+
+  <main class="main">
+    <div class="main-bar">
+      <span>プレビュー</span>
+      <span class="mode" id="mode-label">ドラッグで見回し / ホットスポットをクリックで選択</span>
+      <span style="flex:1"></span>
+      <span id="view-label"></span>
+    </div>
+    <div id="preview"></div>
+  </main>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="viewer.js"></script>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var STORAGE_KEY = 'ricohtour-editor-v1';
+  var previewBase = new URL('tours/', location.href).href; // 書き出し JSON と同じ基準で相対パスを解決
+
+  var tour = null;           // 書き出し用の設定 (相対パスのまま)
+  var localFiles = {};       // 相対パス → blob URL (プレビュー用)
+  var viewer = null;
+  var selectedId = null;
+  var selectedHs = -1;
+  var mode = null;           // 'scene' | 'info' | null
+  var saveTimer = null;
+
+  function toast(msg) { var t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(t._tm); t._tm = setTimeout(function () { t.classList.remove('show'); }, 1800); }
+  function slug(s) { return String(s || '').toLowerCase().replace(/\.[a-z0-9]+$/i, '').replace(/[^a-z0-9_-]+/g, '-').replace(/^-+|-+$/g, '') || 'scene'; }
+  function uniqueId(base) { var id = base, n = 2; while (tour.scenes.some(function (s) { return s.id === id; })) id = base + '-' + (n++); return id; }
+  function scene(id) { return tour.scenes.filter(function (s) { return s.id === id; })[0] || null; }
+  function r1(v) { return Math.round(v * 10) / 10; }
+
+  function defaultTour() {
+    return { title: '', defaultScene: '', autoRotate: 2, autoRotateDelay: 4000, hfov: 95, floorplan: null, scenes: [] };
+  }
+  function load() {
+    try { var raw = localStorage.getItem(STORAGE_KEY); if (raw) { var o = JSON.parse(raw); tour = o.tour; $('f-base').value = o.base || ''; $('f-filename').value = o.filename || 'mytour.json'; $('f-height').value = o.height || 480; } } catch (e) { /* noop */ }
+    if (!tour) tour = defaultTour();
+    if (!$('f-base').value) $('f-base').value = new URL('./', location.href).href;
+  }
+  function save() {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(function () {
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ tour: tour, base: $('f-base').value, filename: $('f-filename').value, height: $('f-height').value })); } catch (e) { /* noop */ }
+    }, 200);
+  }
+
+  // プレビュー用: ローカルファイルは blob URL に差し替え
+  function previewConfig() {
+    var c = JSON.parse(JSON.stringify(tour));
+    if (c.floorplan && localFiles[c.floorplan.src]) c.floorplan.src = localFiles[c.floorplan.src];
+    c.scenes.forEach(function (s) { if (localFiles[s.src]) s.src = localFiles[s.src]; });
+    c.autoRotate = 0;
+    if (!c.scenes.length) c.scenes = [];
+    return c;
+  }
+  function exportConfig() {
+    var c = JSON.parse(JSON.stringify(tour));
+    if (!c.floorplan) delete c.floorplan;
+    if (!c.defaultScene) c.defaultScene = c.scenes[0] ? c.scenes[0].id : undefined;
+    c.scenes.forEach(function (s) {
+      if (!s.plan) delete s.plan;
+      if (!s.northOffset) delete s.northOffset;
+      s.hotspots = (s.hotspots || []).map(function (h) { var o = {}; Object.keys(h).forEach(function (k) { if (h[k] !== '' && h[k] != null) o[k] = h[k]; }); return o; });
+    });
+    return c;
+  }
+
+  /* ---- viewer ---- */
+  function initViewer() {
+    if (viewer) viewer.destroy();
+    var cfg = previewConfig();
+    var el = $('preview');
+    if (!cfg.scenes.length) {
+      el.className = 'rt-viewer';
+      el.innerHTML = '<div class="rt-hint rt-show"><span>左の「画像を選んでシーン追加」から始めてください</span></div>';
+      viewer = null;
+      return;
+    }
+    viewer = new RicohTour.Viewer(el, cfg, { baseUrl: previewBase, scene: selectedId || cfg.defaultScene, autoRotate: 0, showHint: false });
+    viewer.setEditMode(true);
+    viewer.on('scenechange', function (e) { if (selectedId !== e.scene.id) { selectedId = e.scene.id; selectedHs = -1; renderSide(); } });
+    viewer.on('viewchange', function (v) { $('view-label').textContent = 'yaw ' + r1(v.yaw) + '° / pitch ' + r1(v.pitch) + '° / hfov ' + r1(v.hfov) + '°'; });
+    viewer.on('click', function (e) {
+      if (!mode || !selectedId) return;
+      var s = scene(selectedId);
+      var h = { type: mode, yaw: r1(e.yaw), pitch: r1(e.pitch), text: '' };
+      if (mode === 'scene') {
+        var other = tour.scenes.filter(function (x) { return x.id !== selectedId; });
+        h.target = other[0] ? other[0].id : '';
+        h.text = other[0] ? other[0].name + 'へ' : '';
+      } else { h.title = ''; h.text = ''; }
+      s.hotspots = s.hotspots || [];
+      s.hotspots.push(h);
+      selectedHs = s.hotspots.length - 1;
+      setMode(null);
+      refreshScene();
+      toast('ホットスポットを追加しました');
+    });
+    viewer.on('hotspotclick', function (e) { selectedHs = e.index; renderHotspots(); highlightHs(); });
+  }
+  function refreshScene() {
+    if (!viewer) { initViewer(); renderSide(); return; }
+    viewer.setConfig(previewConfig(), previewBase).then(function () { highlightHs(); });
+    renderSide();
+    save();
+  }
+  function highlightHs() {
+    if (!viewer) return;
+    viewer.hotspotEls.forEach(function (it, i) { it.el.classList.toggle('rt-selected', i === selectedHs); });
+  }
+  function setMode(m) {
+    mode = m;
+    $('mode-scene').classList.toggle('on', m === 'scene');
+    $('mode-info').classList.toggle('on', m === 'info');
+    var lbl = $('mode-label');
+    lbl.classList.toggle('on', !!m);
+    lbl.textContent = m === 'scene' ? '移動先にしたい場所(ドアなど)をクリック' : m === 'info' ? '説明を付けたい場所をクリック' : 'ドラッグで見回し / ホットスポットをクリックで選択';
+  }
+
+  /* ---- side panel ---- */
+  function renderSide() {
+    $('f-title').value = tour.title || '';
+    $('f-autorotate').value = tour.autoRotate != null ? tour.autoRotate : 2;
+    $('f-plan').value = tour.floorplan ? tour.floorplan.src : '';
+    var def = $('f-default'); def.innerHTML = '';
+    tour.scenes.forEach(function (s) { var o = document.createElement('option'); o.value = s.id; o.textContent = s.name; def.appendChild(o); });
+    def.value = tour.defaultScene || (tour.scenes[0] && tour.scenes[0].id) || '';
+
+    var list = $('scene-list'); list.innerHTML = '';
+    if (!tour.scenes.length) list.innerHTML = '<div class="item" style="cursor:default;color:#6b7280">まだシーンがありません</div>';
+    tour.scenes.forEach(function (s, i) {
+      var it = document.createElement('div'); it.className = 'item' + (s.id === selectedId ? ' active' : '');
+      var img = document.createElement('img'); img.src = localFiles[s.src] || new URL(s.src, previewBase).href; it.appendChild(img);
+      var nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = s.name; it.appendChild(nm);
+      var meta = document.createElement('span'); meta.className = 'meta'; meta.textContent = (s.hotspots || []).length + ' HS'; it.appendChild(meta);
+      var up = document.createElement('button'); up.className = 'small'; up.textContent = '↑'; up.disabled = i === 0;
+      up.onclick = function (e) { e.stopPropagation(); tour.scenes.splice(i - 1, 0, tour.scenes.splice(i, 1)[0]); refreshScene(); };
+      var dn = document.createElement('button'); dn.className = 'small'; dn.textContent = '↓'; dn.disabled = i === tour.scenes.length - 1;
+      dn.onclick = function (e) { e.stopPropagation(); tour.scenes.splice(i + 1, 0, tour.scenes.splice(i, 1)[0]); refreshScene(); };
+      var del = document.createElement('button'); del.className = 'small danger'; del.textContent = '✕';
+      del.onclick = function (e) { e.stopPropagation(); if (!confirm('「' + s.name + '」を削除しますか？')) return; tour.scenes.splice(i, 1); tour.scenes.forEach(function (x) { x.hotspots = (x.hotspots || []).filter(function (h) { return h.target !== s.id; }); }); if (selectedId === s.id) selectedId = tour.scenes[0] ? tour.scenes[0].id : null; if (tour.defaultScene === s.id) tour.defaultScene = ''; initViewer(); renderSide(); save(); };
+      it.appendChild(up); it.appendChild(dn); it.appendChild(del);
+      it.onclick = function () { selectedId = s.id; selectedHs = -1; if (viewer) viewer.loadScene(s.id); else initViewer(); renderSide(); };
+      list.appendChild(it);
+    });
+
+    var s = selectedId && scene(selectedId);
+    $('scene-panel').hidden = !s;
+    if (s) {
+      $('s-name').value = s.name; $('s-id').value = s.id; $('s-src').value = s.src;
+      $('s-view').textContent = '初期表示: yaw ' + r1(s.yaw || 0) + '° / pitch ' + r1(s.pitch || 0) + '°' + (s.hfov ? ' / hfov ' + r1(s.hfov) + '°' : '') + (s.northOffset ? ' / 北 ' + r1(s.northOffset) + '°' : '');
+      var hasPlan = !!(tour.floorplan && tour.floorplan.src);
+      $('plan-pick-wrap').hidden = !hasPlan;
+      if (hasPlan) {
+        $('plan-pick-img').src = localFiles[tour.floorplan.src] || new URL(tour.floorplan.src, previewBase).href;
+        var dot = $('plan-pick-dot');
+        dot.hidden = !s.plan;
+        if (s.plan) { dot.style.left = s.plan.x * 100 + '%'; dot.style.top = s.plan.y * 100 + '%'; }
+        $('s-plan-rot').value = s.plan && s.plan.rotation != null ? s.plan.rotation : 0;
+      }
+      renderHotspots();
+    }
+    renderOutput();
+  }
+
+  function renderHotspots() {
+    var s = scene(selectedId); var wrap = $('hs-list'); wrap.innerHTML = '';
+    if (!s) return;
+    var hs = s.hotspots || [];
+    if (!hs.length) { wrap.innerHTML = '<p class="sub">まだホットスポットがありません。上のボタンを押してパノラマをクリックしてください。</p>'; return; }
+    hs.forEach(function (h, i) {
+      var box = document.createElement('div'); box.className = 'hs' + (i === selectedHs ? ' active' : '');
+      var head = document.createElement('div'); head.className = 'head';
+      head.innerHTML = '<span class="badge ' + (h.type === 'info' ? 'info' : '') + '">' + (h.type === 'info' ? '情報' : '移動') + '</span><b></b>';
+      head.querySelector('b').textContent = 'yaw ' + r1(h.yaw) + '° / pitch ' + r1(h.pitch) + '°';
+      var look = document.createElement('button'); look.className = 'small'; look.textContent = '表示'; look.onclick = function () { selectedHs = i; if (viewer) viewer.lookAt(h.yaw, h.pitch); renderHotspots(); highlightHs(); };
+      var mv = document.createElement('button'); mv.className = 'small'; mv.textContent = '位置を画面中央に'; mv.title = '現在の画面中央にこのホットスポットを移動'; mv.onclick = function () { if (!viewer) return; var v = viewer.getView(); h.yaw = r1(v.yaw); h.pitch = r1(v.pitch); refreshScene(); };
+      var del = document.createElement('button'); del.className = 'small danger'; del.textContent = '✕'; del.onclick = function () { hs.splice(i, 1); selectedHs = -1; refreshScene(); };
+      head.appendChild(look); head.appendChild(mv); head.appendChild(del);
+      box.appendChild(head);
+      if (h.type === 'scene') {
+        var lab = document.createElement('label'); lab.textContent = '移動先'; box.appendChild(lab);
+        var sel = document.createElement('select');
+        tour.scenes.forEach(function (x) { if (x.id === s.id) return; var o = document.createElement('option'); o.value = x.id; o.textContent = x.name; sel.appendChild(o); });
+        sel.value = h.target || '';
+        sel.onchange = function () { h.target = sel.value; if (!h.text || /へ$/.test(h.text)) h.text = scene(sel.value).name + 'へ'; refreshScene(); };
+        box.appendChild(sel);
+        var lab2 = document.createElement('label'); lab2.textContent = 'ラベル'; box.appendChild(lab2);
+        var txt = document.createElement('input'); txt.type = 'text'; txt.value = h.text || ''; txt.oninput = function () { h.text = txt.value; save(); }; txt.onchange = function () { refreshScene(); }; box.appendChild(txt);
+        var row = document.createElement('div'); row.className = 'row wrap';
+        var b = document.createElement('button'); b.className = 'small'; b.textContent = '移動後の向きを現在の視点にする';
+        b.onclick = function () { if (!viewer) return; var v = viewer.getView(); h.targetYaw = r1(v.yaw); h.targetPitch = r1(v.pitch); save(); toast('移動後の向きを設定 (yaw ' + h.targetYaw + '°)'); renderHotspots(); };
+        var hint = document.createElement('span'); hint.className = 'sub'; hint.style.margin = '0'; hint.textContent = h.targetYaw != null ? '移動後 yaw ' + h.targetYaw + '°' : '移動後の向き: 移動先の初期表示';
+        row.appendChild(b); row.appendChild(hint); box.appendChild(row);
+      } else {
+        var lt = document.createElement('label'); lt.textContent = '見出し'; box.appendChild(lt);
+        var ti = document.createElement('input'); ti.type = 'text'; ti.value = h.title || ''; ti.oninput = function () { h.title = ti.value; save(); }; ti.onchange = function () { refreshScene(); }; box.appendChild(ti);
+        var ld = document.createElement('label'); ld.textContent = '説明文'; box.appendChild(ld);
+        var ta = document.createElement('textarea'); ta.style.minHeight = '48px'; ta.value = h.text || ''; ta.oninput = function () { h.text = ta.value; save(); }; ta.onchange = function () { refreshScene(); }; box.appendChild(ta);
+        var lu = document.createElement('label'); lu.textContent = 'リンクURL (任意: クリックで開く)'; box.appendChild(lu);
+        var ur = document.createElement('input'); ur.type = 'text'; ur.value = h.url || ''; ur.oninput = function () { h.url = ur.value; save(); }; box.appendChild(ur);
+      }
+      wrap.appendChild(box);
+    });
+  }
+
+  function renderOutput() {
+    var cfg = exportConfig();
+    $('out-json').value = JSON.stringify(cfg, null, 2);
+    var base = ($('f-base').value || '').trim(); if (base && !/\/$/.test(base)) base += '/';
+    var fn = ($('f-filename').value || 'mytour.json').trim(); if (!/\.json$/i.test(fn)) fn += '.json';
+    var h = parseInt($('f-height').value, 10) || 480;
+    var url = base + '?tour=' + encodeURIComponent(fn.replace(/\.json$/i, ''));
+    $('open-preview').href = url;
+    $('out-iframe').value = '<iframe src="' + url + '" width="100%" height="' + h + '" style="border:0;max-width:100%;display:block" allow="fullscreen; gyroscope; accelerometer" allowfullscreen loading="lazy" title="360°バーチャル内見"></iframe>';
+    $('out-script').value = '<link rel="stylesheet" href="' + base + 'viewer.css">\n<div data-ricoh-tour="' + base + 'tours/' + fn + '" style="height:' + h + 'px"></div>\n<script src="' + base + 'viewer.js"><\/script>';
+  }
+
+  /* ---- add scenes ---- */
+  function addSceneFromFile(file) {
+    var rel = '../images/' + file.name;
+    localFiles[rel] = URL.createObjectURL(file);
+    var id = uniqueId(slug(file.name));
+    var s = { id: id, name: file.name.replace(/\.[^.]+$/, ''), src: rel, yaw: 0, pitch: 0, hotspots: [] };
+    tour.scenes.push(s);
+    if (!tour.defaultScene) tour.defaultScene = id;
+    selectedId = id; selectedHs = -1;
+  }
+  $('add-scene').onclick = function () { $('scene-files').click(); };
+  $('scene-files').onchange = function () {
+    var files = Array.prototype.slice.call(this.files); if (!files.length) return;
+    files.forEach(addSceneFromFile);
+    this.value = '';
+    initViewer(); renderSide(); save();
+    toast(files.length + ' 件のシーンを追加しました');
+  };
+  $('add-scene-url').onclick = function () {
+    var url = prompt('全天球画像のURL、または tours/ からの相対パス (例: ../images/living.jpg)'); if (!url) return;
+    var name = prompt('部屋の名前', 'リビング') || 'シーン';
+    var id = uniqueId(slug(url.split('/').pop()));
+    tour.scenes.push({ id: id, name: name, src: url.trim(), yaw: 0, pitch: 0, hotspots: [] });
+    if (!tour.defaultScene) tour.defaultScene = id;
+    selectedId = id; selectedHs = -1;
+    initViewer(); renderSide(); save();
+  };
+
+  /* ---- fields ---- */
+  $('f-title').oninput = function () { tour.title = this.value; save(); renderOutput(); };
+  $('f-title').onchange = function () { refreshScene(); };
+  $('f-autorotate').onchange = function () { tour.autoRotate = +this.value || 0; save(); renderOutput(); };
+  $('f-default').onchange = function () { tour.defaultScene = this.value; save(); renderOutput(); };
+  $('f-plan').onchange = function () { tour.floorplan = this.value.trim() ? { src: this.value.trim(), open: true } : null; refreshScene(); };
+  $('f-plan-file-btn').onclick = function () { $('f-plan-file').click(); };
+  $('f-plan-file').onchange = function () { var f = this.files[0]; if (!f) return; var rel = '../images/' + f.name; localFiles[rel] = URL.createObjectURL(f); tour.floorplan = { src: rel, open: true }; this.value = ''; refreshScene(); };
+  $('s-name').oninput = function () { var s = scene(selectedId); if (s) { s.name = this.value; save(); } };
+  $('s-name').onchange = function () { refreshScene(); };
+  $('s-id').onchange = function () {
+    var s = scene(selectedId); if (!s) return; var nid = slug(this.value); if (!nid || (nid !== s.id && scene(nid))) { this.value = s.id; toast('そのIDは使えません'); return; }
+    tour.scenes.forEach(function (x) { (x.hotspots || []).forEach(function (h) { if (h.target === s.id) h.target = nid; }); });
+    if (tour.defaultScene === s.id) tour.defaultScene = nid;
+    s.id = nid; selectedId = nid; refreshScene();
+  };
+  $('s-src').onchange = function () { var s = scene(selectedId); if (s) { s.src = this.value.trim(); initViewer(); renderSide(); save(); } };
+  $('s-setview').onclick = function () { var s = scene(selectedId); if (!s || !viewer) return; var v = viewer.getView(); s.yaw = r1(v.yaw); s.pitch = r1(v.pitch); s.hfov = r1(v.hfov); save(); renderSide(); toast('初期表示を設定しました'); };
+  $('s-north').onclick = function () { var s = scene(selectedId); if (!s || !viewer) return; s.northOffset = r1(-viewer.getView().yaw); save(); renderSide(); toast('北の向きを設定しました'); };
+  $('plan-pick').onclick = function (ev) { var s = scene(selectedId); if (!s) return; var r = this.getBoundingClientRect(); s.plan = s.plan || {}; s.plan.x = Math.round((ev.clientX - r.left) / r.width * 1000) / 1000; s.plan.y = Math.round((ev.clientY - r.top) / r.height * 1000) / 1000; refreshScene(); };
+  $('s-plan-rot').onchange = function () { var s = scene(selectedId); if (!s) return; s.plan = s.plan || { x: 0.5, y: 0.5 }; s.plan.rotation = +this.value || 0; refreshScene(); };
+  $('mode-scene').onclick = function () { if (tour.scenes.length < 2) { toast('移動先となるシーンをもう1つ追加してください'); return; } setMode(mode === 'scene' ? null : 'scene'); };
+  $('mode-info').onclick = function () { setMode(mode === 'info' ? null : 'info'); };
+  ['f-base', 'f-filename', 'f-height'].forEach(function (id) { $(id).oninput = function () { renderOutput(); save(); }; });
+
+  /* ---- export / import ---- */
+  function copy(text, msg) { (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(function () { toast(msg); }, function () { toast('コピーできませんでした。手動で選択してください'); }); }
+  $('copy-json').onclick = function () { copy($('out-json').value, 'JSONをコピーしました'); };
+  $('copy-iframe').onclick = function () { copy($('out-iframe').value, '埋め込みコードをコピーしました'); };
+  $('copy-script').onclick = function () { copy($('out-script').value, '埋め込みコードをコピーしました'); };
+  $('dl-json').onclick = function () {
+    var fn = ($('f-filename').value || 'mytour.json').trim(); if (!/\.json$/i.test(fn)) fn += '.json';
+    var blob = new Blob([$('out-json').value], { type: 'application/json' });
+    var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = fn; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+    var missing = Object.keys(localFiles);
+    if (missing.length) toast('画像 ' + missing.length + ' 件を tour/images/ にアップロードしてください');
+  };
+  $('import-json').onclick = function () { $('import-file').click(); };
+  $('import-file').onchange = function () {
+    var f = this.files[0]; if (!f) return; var rd = new FileReader();
+    rd.onload = function () {
+      try {
+        var o = JSON.parse(rd.result);
+        var n = RicohTour.normalizeConfig(o, null);
+        tour = Object.assign(defaultTour(), o, { scenes: n.scenes.map(function (s) { var raw = (Array.isArray(o.scenes) ? o.scenes : Object.keys(o.scenes || {}).map(function (k) { return Object.assign({ id: k }, o.scenes[k]); })).filter(function (r) { return String(r.id || '') === s.id; })[0] || {}; return { id: s.id, name: s.name, src: raw.src || raw.image || raw.panorama || s.src, yaw: s.yaw, pitch: s.pitch, hfov: s.hfov || undefined, northOffset: s.northOffset, plan: s.plan, hotspots: s.hotspots }; }) });
+        if (o.floorplan) tour.floorplan = { src: o.floorplan.src || o.floorplan.image, open: o.floorplan.open !== false };
+        $('f-filename').value = f.name;
+        selectedId = tour.defaultScene || (tour.scenes[0] && tour.scenes[0].id); selectedHs = -1;
+        initViewer(); renderSide(); save(); toast('読み込みました');
+      } catch (e) { alert('JSONを読み込めませんでした: ' + e.message); }
+    };
+    rd.readAsText(f); this.value = '';
+  };
+  $('reset').onclick = function () { if (!confirm('編集内容をすべて削除して初期化しますか？')) return; tour = defaultTour(); localFiles = {}; selectedId = null; selectedHs = -1; localStorage.removeItem(STORAGE_KEY); initViewer(); renderSide(); };
+
+  // ?load=sample でサンプルを読み込む
+  load();
+  var q = new URLSearchParams(location.search);
+  var loadName = q.get('load');
+  if (loadName || !tour.scenes.length && q.get('load') !== '') {
+    var fn = (loadName || 'sample') + '.json';
+    fetch('tours/' + fn).then(function (r) { return r.ok ? r.json() : null; }).then(function (o) {
+      if (o && (loadName || !tour.scenes.length)) {
+        var n = RicohTour.normalizeConfig(o, null);
+        tour = Object.assign(defaultTour(), o, { scenes: n.scenes.map(function (s, i) { var raw = o.scenes[i] || {}; return { id: s.id, name: s.name, src: raw.src || s.src, yaw: s.yaw, pitch: s.pitch, hfov: s.hfov || undefined, northOffset: s.northOffset, plan: s.plan, hotspots: s.hotspots }; }) });
+        $('f-filename').value = fn;
+        selectedId = tour.defaultScene;
+      }
+      initViewer(); renderSide();
+    }).catch(function () { initViewer(); renderSide(); });
+  } else {
+    selectedId = tour.defaultScene || (tour.scenes[0] && tour.scenes[0].id) || null;
+    initViewer(); renderSide();
+  }
+})();
+</script>
+</body>
+</html>
