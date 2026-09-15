@@ -1,0 +1,61 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+// 顧客
+model Customer {
+  id              Int       @id @default(autoincrement())
+  name            String
+  budgetMin       Int? // 万円
+  budgetMax       Int? // 万円
+  preferredAreas  String    @default("[]") // JSON配列文字列 例: ["緑町","桜ヶ丘"]
+  propertyType    String? // DETACHED | APARTMENT | LAND
+  minBedrooms     Int?
+  parkingSpaces   Int? // 希望台数（0 = 不要）
+  maxBuildingAge  Int? // 築年数上限（年）
+  schoolDistrict  String?
+  notes           String?
+  priority        String    @default("B") // A | B | C | D
+  lastContactedAt DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  matchNotes      MatchNote[]
+}
+
+// 物件
+model Property {
+  id             Int      @id @default(autoincrement())
+  name           String
+  price          Int? // 万円
+  address        String?
+  area           String? // エリア名（町名など）
+  propertyType   String? // DETACHED | APARTMENT | LAND
+  bedrooms       Int?
+  parkingSpaces  Int?
+  buildingAge    Int? // 築年数（年）
+  schoolDistrict String?
+  landArea       Float? // ㎡
+  buildingArea   Float? // ㎡
+  notes          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  matchNotes     MatchNote[]
+}
+
+// 顧客×物件の営業担当者向けメモ
+model MatchNote {
+  id         Int      @id @default(autoincrement())
+  customerId Int
+  propertyId Int
+  memo       String   @default("")
+  updatedAt  DateTime @updatedAt
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@unique([customerId, propertyId])
+}
