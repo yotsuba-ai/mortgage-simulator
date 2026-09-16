@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>VR動画ビューア（ゴーグル不要）</title>
+<style>
+  :root {
+    --bg: #0b0d12; --panel: rgba(18, 21, 30, 0.88); --fg: #f1f3f8; --muted: #9aa3b5;
+    --accent: #4f8cff; --border: rgba(255,255,255,0.12);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--fg);
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", "Segoe UI", sans-serif;
+    overscroll-behavior: none; }
+  body { display: flex; flex-direction: column; height: 100dvh; }
+
+  header { padding: 8px 12px; background: var(--panel); border-bottom: 1px solid var(--border);
+    display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 13px; }
+  header h1 { font-size: 15px; margin: 0 8px 0 0; font-weight: 600; white-space: nowrap; }
+  label { display: inline-flex; align-items: center; gap: 4px; color: var(--muted); }
+  select, input[type=url], button { font: inherit; color: var(--fg); background: #1c2130;
+    border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; }
+  input[type=url] { min-width: 180px; flex: 1; }
+  button { cursor: pointer; }
+  button.primary { background: var(--accent); border-color: transparent; }
+  button.on { background: #2f7d4f; border-color: transparent; }
+  input[type=file] { display: none; }
+  .filebtn { display: inline-block; }
+
+  #stage { position: relative; flex: 1; min-height: 0; background: #000; overflow: hidden;
+    touch-action: none; user-select: none; -webkit-user-select: none; }
+  #gl { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  #flatWrap { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; }
+  #flatWrap.show { display: flex; }
+  #crop { position: relative; overflow: hidden; background: #000; }
+  /* 球面モードでは video は非表示だがデコードは続ける（display:none は一部端末でフレームが止まるため） */
+  #video { position: absolute; left: 0; top: 0; width: 1px; height: 1px; opacity: 0.01; pointer-events: none; }
+  #crop #video { opacity: 1; }
+  #crop.sbs-left #video  { width: 200%; height: 100%; left: 0; }
+  #crop.sbs-right #video { width: 200%; height: 100%; left: -100%; }
+  #crop.tb-left #video   { width: 100%; height: 200%; top: 0; }
+  #crop.tb-right #video  { width: 100%; height: 200%; top: -100%; }
+  #crop.mono #video      { width: 100%; height: 100%; }
+
+  #overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: 10px; text-align: center; padding: 16px; color: var(--muted);
+    font-size: 14px; line-height: 1.6; pointer-events: none; }
+  #overlay.hidden { display: none; }
+  #overlay button { pointer-events: auto; font-size: 18px; padding: 12px 28px; }
+  #msg { position: absolute; left: 0; right: 0; top: 8px; text-align: center; font-size: 12px;
+    color: #ffb4b4; pointer-events: none; text-shadow: 0 1px 2px #000; padding: 0 12px; }
+
+  footer { padding: 8px 12px calc(8px + env(safe-area-inset-bottom)); background: var(--panel);
+    border-top: 1px solid var(--border); display: flex; gap: 8px; align-items: center; font-size: 13px; }
+  footer input[type=range] { flex: 1; min-width: 0; accent-color: var(--accent); }
+  #time { font-variant-numeric: tabular-nums; color: var(--muted); white-space: nowrap; }
+  @media (max-width: 480px) { header h1 { width: 100%; } }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>VR動画ビューア（ゴーグル不要）</h1>
+  <label class="filebtn"><button type="button" id="pickBtn" class="primary">動画ファイルを選ぶ</button>
+    <input type="file" id="file" accept="video/*"></label>
+  <input type="url" id="url" placeholder="または動画のURL (mp4 など)" inputmode="url">
+  <button type="button" id="loadUrl">読込</button>
+  <label>形式
+    <select id="format">
+      <option value="360:sbs" selected>360° 左右並び(SBS)</option>
+      <option value="180:sbs">180° 左右並び(VR180 SBS)</option>
+      <option value="360:tb">360° 上下並び(TB/OU)</option>
+      <option value="180:tb">180° 上下並び(TB/OU)</option>
+      <option value="360:mono">360° 単眼</option>
+      <option value="flat:sbs">平面3D 左右並び(SBS)</option>
+      <option value="flat:tb">平面3D 上下並び(TB)</option>
+    </select>
+  </label>
+  <label>表示する目
+    <select id="eye">
+      <option value="left" selected>左</option>
+      <option value="right">右</option>
+    </select>
+  </label>
+  <button type="button" id="gyroBtn">ジャイロ OFF</button>
+  <button type="button" id="fsBtn">全画面</button>
+</header>
+
+<main id="stage">
+  <canvas id="gl"></canvas>
+  <div id="flatWrap"><div id="crop"></div></div>
+  <video id="video" playsinline webkit-playsinline preload="metadata"></video>
+  <div id="overlay">
+    <div>SBS（左右並び）などのVR動画を、片眼分だけ切り出して表示します。<br>
+      指でドラッグ、またはジャイロONで端末を動かすと視点が変わります。</div>
+    <button type="button" id="bigPlay" class="primary" hidden>▶ 再生</button>
+  </div>
+  <div id="msg"></div>
+</main>
+
+<footer>
+  <button type="button" id="playBtn">▶</button>
+  <input type="range" id="seek" min="0" max="1000" value="0" step="1">
+  <span id="time">0:00 / 0:00</span>
+  <button type="button" id="muteBtn">🔊</button>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+  const $ = (id) => document.getElementById(id);
+  const stage = $('stage'), canvas = $('gl'), video = $('video'), flatWrap = $('flatWrap'), crop = $('crop');
+  const overlay = $('overlay'), bigPlay = $('bigPlay'), msg = $('msg');
+  const formatSel = $('format'), eyeSel = $('eye'), gyroBtn = $('gyroBtn'), fsBtn = $('fsBtn');
+  const playBtn = $('playBtn'), seek = $('seek'), timeEl = $('time'), muteBtn = $('muteBtn');
+
+  const state = {
+    projection: '360',   // '360' | '180' | 'flat'
+    layout: 'sbs',       // 'sbs' | 'tb' | 'mono'
+    eye: 'left',
+    lon: 0, lat: 0,      // ドラッグによる視点（度）
+    fov: 75,
+    gyro: false,
+    orient: null,        // {alpha,beta,gamma} ラジアン
+    screenOrient: 0,     // ラジアン
+    hasVideo: false, seeking: false,
+  };
+
+  // ---------- WebGL ----------
+  const gl = canvas.getContext('webgl', { antialias: false, alpha: false, preserveDrawingBuffer: true })
+          || canvas.getContext('experimental-webgl');
+  if (!gl) { setMsg('この端末はWebGLに対応していないため、360°表示ができません（平面3Dモードは利用可）。'); }
+
+  const VS = `
+    attribute vec2 p; varying vec2 v;
+    void main(){ v = p; gl_Position = vec4(p, 0.0, 1.0); }`;
+  const FS = `
+    precision highp float;
+    varying vec2 v;
+    uniform sampler2D tex;
+    uniform mat3 rot;          // カメラ→ワールド回転
+    uniform float tanHalfFov;
+    uniform float aspect;
+    uniform float halfSpan;    // 映像の水平半角: 360°=PI, 180°=PI/2
+    uniform vec2 uvScale;
+    uniform vec2 uvOffset;
+    const float PI = 3.141592653589793;
+    void main(){
+      vec3 dir = normalize(rot * vec3(v.x * tanHalfFov * aspect, v.y * tanHalfFov, -1.0));
+      float lon = atan(dir.x, -dir.z);           // 正面0、右が正
+      float lat = asin(clamp(dir.y, -1.0, 1.0)); // 上が正
+      if (abs(lon) > halfSpan) { gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0); return; }
+      float u = 0.5 + lon / (2.0 * halfSpan);
+      float t = 0.5 - lat / PI;                  // 画像の上端が t=0
+      gl_FragColor = texture2D(tex, uvOffset + uvScale * vec2(u, t));
+    }`;
+
+  let prog, uni = {}, tex;
+  function initGL() {
+    if (!gl) return;
+    function sh(type, src) {
+      const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s);
+      if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s));
+      return s;
+    }
+    prog = gl.createProgram();
+    gl.attachShader(prog, sh(gl.VERTEX_SHADER, VS));
+    gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, FS));
+    gl.linkProgram(prog);
+    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(prog));
+    gl.useProgram(prog);
+    const buf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
+    const loc = gl.getAttribLocation(prog, 'p');
+    gl.enableVertexAttribArray(loc);
+    gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+    ['tex','rot','tanHalfFov','aspect','halfSpan','uvScale','uvOffset'].forEach(n => uni[n] = gl.getUniformLocation(prog, n));
+    tex = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, 1, 1, 0, gl.RGB, gl.UNSIGNED_BYTE, new Uint8Array([0,0,0]));
+    gl.uniform1i(uni.tex, 0);
+  }
+  try { initGL(); } catch (e) { setMsg('WebGLの初期化に失敗しました: ' + e.message); }
+
+  // ---------- 行列・クォータニオン ----------
+  const DEG = Math.PI / 180;
+  function mat3Mul(a, b) { // 列優先 3x3
+    const r = new Float32Array(9);
+    for (let c = 0; c < 3; c++) for (let rI = 0; rI < 3; rI++)
+      r[c*3 + rI] = a[rI] * b[c*3] + a[3 + rI] * b[c*3 + 1] + a[6 + rI] * b[c*3 + 2];
+    return r;
+  }
+  function rotY(t) { const c = Math.cos(t), s = Math.sin(t); return new Float32Array([c,0,-s, 0,1,0, s,0,c]); }
+  function rotX(t) { const c = Math.cos(t), s = Math.sin(t); return new Float32Array([1,0,0, 0,c,s, 0,-s,c]); }
+  function quatMul(a, b) {
+    return [
+      a[0]*b[3] + a[3]*b[0] + a[1]*b[2] - a[2]*b[1],
+      a[1]*b[3] + a[3]*b[1] + a[2]*b[0] - a[0]*b[2],
+      a[2]*b[3] + a[3]*b[2] + a[0]*b[1] - a[1]*b[0],
+      a[3]*b[3] - a[0]*b[0] - a[1]*b[1] - a[2]*b[2],
+    ];
+  }
+  function quatFromEulerYXZ(x, y, z) {
+    const c1 = Math.cos(x/2), c2 = Math.cos(y/2), c3 = Math.cos(z/2);
+    const s1 = Math.sin(x/2), s2 = Math.sin(y/2), s3 = Math.sin(z/2);
+    return [ s1*c2*c3 + c1*s2*s3, c1*s2*c3 - s1*c2*s3, c1*c2*s3 - s1*s2*c3, c1*c2*c3 + s1*s2*s3 ];
+  }
+  function quatToMat3(q) {
+    const [x, y, z, w] = q;
+    const xx = x*x*2, yy = y*y*2, zz = z*z*2, xy = x*y*2, xz = x*z*2, yz = y*z*2, wx = w*x*2, wy = w*y*2, wz = w*z*2;
+    return new Float32Array([1-(yy+zz), xy+wz, xz-wy,  xy-wz, 1-(xx+zz), yz+wx,  xz+wy, yz-wx, 1-(xx+yy)]);
+  }
+  // DeviceOrientation → カメラ回転（three.js DeviceOrientationControls と同じ手順）
+  const Q_XNEG90 = [-Math.SQRT1_2, 0, 0, Math.SQRT1_2];
+  function gyroMatrix() {
+    const o = state.orient;
+    let q = quatFromEulerYXZ(o.beta, o.alpha, -o.gamma);
+    q = quatMul(q, Q_XNEG90);
+    const so = state.screenOrient;
+    q = quatMul(q, [0, 0, -Math.sin(so/2), Math.cos(so/2)]);
+    return quatToMat3(q);
+  }
+  function cameraMatrix() {
+    if (state.gyro && state.orient) return mat3Mul(rotY(-state.lon * DEG), gyroMatrix());
+    return mat3Mul(rotY(-state.lon * DEG), rotX(state.lat * DEG));
+  }
+
+  // ---------- 描画 ----------
+  function uvParams() {
+    const left = state.eye === 'left';
+    if (state.layout === 'sbs') return { scale: [0.5, 1], offset: [left ? 0 : 0.5, 0] };
+    if (state.layout === 'tb')  return { scale: [1, 0.5], offset: [0, left ? 0 : 0.5] };
+    return { scale: [1, 1], offset: [0, 0] };
+  }
+  function resize() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const w = Math.max(1, Math.round(stage.clientWidth * dpr)), h = Math.max(1, Math.round(stage.clientHeight * dpr));
+    if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
+    layoutFlat();
+  }
+  function render() {
+    requestAnimationFrame(render);
+    if (state.projection === 'flat' || !gl || !prog) return;
+    resize();
+    gl.viewport(0, 0, canvas.width, canvas.height);
+    if (state.hasVideo && video.readyState >= 2) {
+      gl.bindTexture(gl.TEXTURE_2D, tex);
+      try { gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, video); }
+      catch (e) { setMsg('この動画はブラウザのセキュリティ制限（CORS）で描画できません。ファイルを直接選ぶか、CORS対応のURLを使ってください。'); state.hasVideo = false; }
+    }
+    const uv = uvParams();
+    gl.uniformMatrix3fv(uni.rot, false, cameraMatrix());
+    gl.uniform1f(uni.tanHalfFov, Math.tan(state.fov * DEG / 2));
+    gl.uniform1f(uni.aspect, canvas.width / canvas.height);
+    gl.uniform1f(uni.halfSpan, state.projection === '180' ? Math.PI / 2 : Math.PI);
+    gl.uniform2f(uni.uvScale, uv.scale[0], uv.scale[1]);
+    gl.uniform2f(uni.uvOffset, uv.offset[0], uv.offset[1]);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  }
+
+  // 平面3Dモード: CSSで片眼分だけを切り出して表示
+  function layoutFlat() {
+    if (state.projection !== 'flat') return;
+    const vw = video.videoWidth || 16, vh = video.videoHeight || 9;
+    let ew = vw, eh = vh;
+    if (state.layout === 'sbs') ew = vw / 2; else if (state.layout === 'tb') eh = vh / 2;
+    const sw = stage.clientWidth, sh = stage.clientHeight;
+    const s = Math.min(sw / ew, sh / eh);
+    crop.style.width = Math.floor(ew * s) + 'px';
+    crop.style.height = Math.floor(eh * s) + 'px';
+  }
+  function applyMode() {
+    const [proj, layout] = formatSel.value.split(':');
+    state.projection = proj; state.layout = layout; state.eye = eyeSel.value;
+    const flat = proj === 'flat';
+    flatWrap.classList.toggle('show', flat);
+    canvas.style.display = flat ? 'none' : 'block';
+    if (flat) {
+      crop.className = layout === 'mono' ? 'mono' : layout + '-' + state.eye;
+      if (video.parentNode !== crop) crop.appendChild(video);
+      layoutFlat();
+    } else if (video.parentNode !== stage) {
+      stage.appendChild(video);
+    }
+  }
+
+  // ---------- 動画読み込み ----------
+  let objectUrl = null;
+  function loadSource(src, isFile) {
+    if (objectUrl) { URL.revokeObjectURL(objectUrl); objectUrl = null; }
+    setMsg('');
+    video.pause();
+    if (isFile) { objectUrl = URL.createObjectURL(src); video.removeAttribute('crossorigin'); video.src = objectUrl; }
+    else { video.crossOrigin = 'anonymous'; video.src = src; }
+    video.load();
+    state.hasVideo = true;
+    overlay.classList.remove('hidden');
+    bigPlay.hidden = false;
+    overlay.querySelector('div').textContent = '読み込み中… 再生ボタンを押してください。';
+  }
+  $('pickBtn').addEventListener('click', () => $('file').click());
+  $('file').addEventListener('change', (e) => { if (e.target.files[0]) loadSource(e.target.files[0], true); });
+  $('loadUrl').addEventListener('click', () => { const u = $('url').value.trim(); if (u) loadSource(u, false); });
+  $('url').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('loadUrl').click(); });
+
+  video.addEventListener('loadedmetadata', () => { layoutFlat(); updateTime(); });
+  video.addEventListener('error', () => { setMsg('動画を読み込めませんでした。形式（mp4/H.264 推奨）やURLを確認してください。'); });
+  video.addEventListener('play', () => { overlay.classList.add('hidden'); playBtn.textContent = '❚❚'; });
+  video.addEventListener('pause', () => { playBtn.textContent = '▶'; });
+  video.addEventListener('timeupdate', updateTime);
+
+  function togglePlay() {
+    if (!state.hasVideo) { $('file').click(); return; }
+    if (video.paused) video.play().catch((e) => setMsg('再生できません: ' + e.message)); else video.pause();
+  }
+  playBtn.addEventListener('click', togglePlay);
+  bigPlay.addEventListener('click', togglePlay);
+  muteBtn.addEventListener('click', () => { video.muted = !video.muted; muteBtn.textContent = video.muted ? '🔇' : '🔊'; });
+
+  function fmt(t) { t = Math.max(0, t | 0); return Math.floor(t / 60) + ':' + String(t % 60).padStart(2, '0'); }
+  function updateTime() {
+    const d = video.duration || 0;
+    timeEl.textContent = fmt(video.currentTime) + ' / ' + (isFinite(d) ? fmt(d) : '--:--');
+    if (!state.seeking && isFinite(d) && d > 0) seek.value = Math.round(video.currentTime / d * 1000);
+  }
+  seek.addEventListener('input', () => { state.seeking = true; });
+  seek.addEventListener('change', () => {
+    state.seeking = false;
+    if (isFinite(video.duration)) video.currentTime = seek.value / 1000 * video.duration;
+  });
+
+  // ---------- 視点操作（ドラッグ / ピンチ） ----------
+  const ptrs = new Map();
+  let dragStart = null, pinchStart = null;
+  stage.addEventListener('pointerdown', (e) => {
+    if (e.target.closest('button')) return;
+    stage.setPointerCapture(e.pointerId);
+    ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (ptrs.size === 1) dragStart = { x: e.clientX, y: e.clientY, lon: state.lon, lat: state.lat };
+    else if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; pinchStart = { d: Math.hypot(a.x - b.x, a.y - b.y), fov: state.fov }; dragStart = null; }
+  });
+  stage.addEventListener('pointermove', (e) => {
+    if (!ptrs.has(e.pointerId)) return;
+    ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (ptrs.size === 1 && dragStart) {
+      const k = state.fov / stage.clientWidth; // 画面幅で視野角ぶん回る
+      state.lon = dragStart.lon - (e.clientX - dragStart.x) * k;
+      if (!state.gyro) state.lat = Math.max(-85, Math.min(85, dragStart.lat + (e.clientY - dragStart.y) * k));
+    } else if (ptrs.size === 2 && pinchStart) {
+      const [a, b] = [...ptrs.values()];
+      const d = Math.hypot(a.x - b.x, a.y - b.y);
+      state.fov = Math.max(30, Math.min(110, pinchStart.fov * pinchStart.d / d));
+    }
+  });
+  function pointerEnd(e) { ptrs.delete(e.pointerId); if (ptrs.size < 2) pinchStart = null; if (ptrs.size === 0) dragStart = null; }
+  stage.addEventListener('pointerup', pointerEnd);
+  stage.addEventListener('pointercancel', pointerEnd);
+  stage.addEventListener('wheel', (e) => { e.preventDefault(); state.fov = Math.max(30, Math.min(110, state.fov + e.deltaY * 0.05)); }, { passive: false });
+  stage.addEventListener('dblclick', (e) => { if (!e.target.closest('button')) togglePlay(); });
+
+  // ---------- ジャイロ ----------
+  function onOrient(e) {
+    if (e.alpha == null) return;
+    state.orient = { alpha: e.alpha * DEG, beta: e.beta * DEG, gamma: e.gamma * DEG };
+  }
+  function readScreenOrient() {
+    const a = (screen.orientation && typeof screen.orientation.angle === 'number') ? screen.orientation.angle : (window.orientation || 0);
+    state.screenOrient = a * DEG;
+  }
+  window.addEventListener('orientationchange', readScreenOrient);
+  if (screen.orientation) screen.orientation.addEventListener('change', readScreenOrient);
+  readScreenOrient();
+
+  async function toggleGyro() {
+    if (state.gyro) { state.gyro = false; window.removeEventListener('deviceorientation', onOrient); gyroBtn.textContent = 'ジャイロ OFF'; gyroBtn.classList.remove('on'); return; }
+    if (!('DeviceOrientationEvent' in window)) { setMsg('この端末・ブラウザはジャイロに対応していません。'); return; }
+    try {
+      if (typeof DeviceOrientationEvent.requestPermission === 'function') { // iOS 13+
+        const r = await DeviceOrientationEvent.requestPermission();
+        if (r !== 'granted') { setMsg('ジャイロの利用が許可されませんでした。'); return; }
+      }
+    } catch (e) { setMsg('ジャイロの許可取得に失敗しました: ' + e.message); return; }
+    state.orient = null; state.lon = 0; state.lat = 0;
+    window.addEventListener('deviceorientation', onOrient);
+    state.gyro = true; gyroBtn.textContent = 'ジャイロ ON'; gyroBtn.classList.add('on');
+    setTimeout(() => { if (state.gyro && !state.orient) setMsg('ジャイロの値が取得できません。https でアクセスしているか確認してください。'); }, 1500);
+  }
+  gyroBtn.addEventListener('click', toggleGyro);
+
+  // ---------- 全画面 ----------
+  fsBtn.addEventListener('click', () => {
+    const el = document.documentElement;
+    if (document.fullscreenElement || document.webkitFullscreenElement) {
+      (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+    } else if (el.requestFullscreen) el.requestFullscreen();
+    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+    else if (state.projection === 'flat' && video.webkitEnterFullscreen) video.webkitEnterFullscreen(); // iPhone は video のみ全画面可
+    else setMsg('この端末は全画面表示に対応していません。ホーム画面に追加すると全画面で使えます。');
+  });
+
+  // ---------- 設定変更 ----------
+  formatSel.addEventListener('change', applyMode);
+  eyeSel.addEventListener('change', applyMode);
+  window.addEventListener('resize', resize);
+  document.addEventListener('visibilitychange', () => { if (document.hidden) video.pause(); });
+
+  function setMsg(t) { msg.textContent = t || ''; }
+
+  applyMode();
+  resize();
+  render();
+})();
+</script>
+</body>
+</html>
