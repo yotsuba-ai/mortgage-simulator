@@ -64,6 +64,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Noto Sans JP'
 .verdict.bad .verdict-lead,.verdict.bad .verdict-text{color:var(--bad-text)}
 .verdict.good .verdict-val{color:var(--good)}
 .verdict.bad .verdict-val{color:var(--bad)}
+.verdict.even{background:var(--warn-bg);border-color:var(--warn)}
+.verdict.even .verdict-lead,.verdict.even .verdict-text{color:var(--warn-text)}
+.verdict.even .verdict-val{color:var(--warn-text)}
 .tabs{display:flex;gap:6px;margin-top:14px}
 .tab{flex:1;padding:8px 4px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);color:var(--muted);font:inherit;font-size:13px;font-weight:700;cursor:pointer;line-height:1.3}
 .tab span{display:block;font-size:11px;font-weight:500;font-variant-numeric:tabular-nums}
@@ -108,6 +111,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Noto Sans JP'
 .seg button{flex:1;padding:12px 6px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface2);color:var(--muted);font:inherit;font-size:14px;font-weight:600;cursor:pointer;line-height:1.35}
 .seg button small{display:block;font-size:11px;font-weight:400}
 .seg button.on{background:var(--accent-bg);color:var(--accent-text);border-color:var(--accent)}
+.seg.grid{display:grid;grid-template-columns:1fr 1fr}
+.rise-custom{display:flex;flex-wrap:wrap;gap:8px}
+.rise-custom .in input{width:44px}
 
 /* 入力した条件 */
 .sum-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--border)}
@@ -127,6 +133,7 @@ details[open]>summary::after{content:'−'}
 .bd{width:100%;border-collapse:collapse;margin-top:10px;font-size:13px}
 .bd td{padding:7px 0;border-top:1px solid var(--border);vertical-align:top}
 .bd td:last-child{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:600;padding-left:12px}
+.bd td small{font-size:11px;font-weight:500;color:var(--muted)}
 .bd tr.sep td{color:var(--muted);font-size:11px;font-weight:700;padding-top:16px;border-top:none}
 .bd tr.total td{font-size:15px;font-weight:800;border-top:2px solid var(--text)}
 .good-t{color:var(--good)}
@@ -173,8 +180,21 @@ details[open]>summary::after{content:'−'}
   <p class="q-sub">借りる金額と、ローンの金利（年率）を入れてください。</p>
   <div class="card">
     <div class="field"><label for="loanAmount">借入額</label><div class="in"><input id="loanAmount" type="number" inputmode="decimal" min="0" value="4000"><span>万円</span></div></div>
-    <div class="field"><label for="loanRate">ローン金利<small>年率</small></label><div class="in"><input id="loanRate" type="number" inputmode="decimal" min="0" step="0.01" value="2"><span>%</span></div></div>
+    <div class="field"><label for="loanRate">ローン金利<small>今の年率</small></label><div class="in"><input id="loanRate" type="number" inputmode="decimal" min="0" step="0.01" value="2"><span>%</span></div></div>
+    <div class="field col"><span class="lbl">これから金利はどうなると思いますか？</span>
+      <div class="seg grid" id="riseSeg">
+        <button data-v="flat" class="on">変わらない<small>固定金利ならこれ</small></button>
+        <button data-v="r1">10年で +1%<small>ゆるやかに上がる</small></button>
+        <button data-v="r2">10年で +2%<small>大きく上がる</small></button>
+        <button data-v="custom">自分で指定<small>年数と上がる幅</small></button>
+      </div>
+      <div class="rise-custom" id="riseFields" hidden>
+        <div class="in"><input id="riseYears" type="number" inputmode="numeric" min="1" max="35" value="10" aria-label="何年かけて上がるか"><span>年かけて</span></div>
+        <div class="in"><input id="riseAmt" type="number" inputmode="decimal" min="0" max="10" step="0.1" value="1.5" aria-label="上がる幅"><span>% 上がる</span></div>
+      </div>
+    </div>
   </div>
+  <div class="hint" id="step1Hint" hidden></div>
   <p class="err" hidden></p>
   <div class="nav"><button class="btn btn-primary" data-primary>次へ</button></div>
 </section>
@@ -284,6 +304,7 @@ details[open]>summary::after{content:'−'}
   <p class="note">
     ※ 元利均等返済・ボーナス返済なし。投資は毎月積立の複利で計算しています。<br>
     ※ 比べる時点は「短い方のローンが終わる年」です。利回りは元本保証ではありません。<br>
+    ※ 金利が変わる場合は毎年、残りの期間で返済額を計算し直します（5年ルール・125%ルールは考慮していません）。<br>
     ※ 金利の歴史は変動型住宅ローン金利（主要都市銀行）を参考にしています。
   </p>
 </section>
@@ -359,8 +380,9 @@ var HISTORY=[
 
 var SCREENS=['step1','step2','step3','step4','result'];
 var STEP_COUNT=4;
-var state={tab:'base',tax:'nisa',fx:'usd',screen:null,seenResult:false};
+var state={tab:'base',tax:'nisa',fx:'usd',rise:'flat',screen:null,seenResult:false};
 var TAX={nisa:0,tokutei:0.20315};
+var RISE={flat:0,r1:1,r2:2};// プリセットは10年かけて上がる幅（%）
 var SC_LABEL={bear:'悲観',base:'基本',bull:'楽観'};
 
 function $(id){return document.getElementById(id);}
@@ -382,13 +404,27 @@ function man(v){
   return a.toLocaleString('ja-JP')+'万円';
 }
 function signed(v){return(v>=0?'+':'')+yen(v);}
+function pct(v){return(Math.round(v*100)/100)+'%';}
 
 /* ── ローン・投資の計算 ── */
-function mp(p,ar,y){var m=y*12,r=ar/100/12;if(m<=0||y<=0)return 0;if(r===0)return p/m;return p*r*Math.pow(1+r,m)/(Math.pow(1+r,m)-1);}
-function rb(p,ar,y,paid){var m=y*12,r=ar/100/12,pmt=mp(p,ar,y);if(paid>=m)return 0;if(r===0)return Math.max(0,p-pmt*paid);return Math.max(0,p*Math.pow(1+r,paid)-pmt*((Math.pow(1+r,paid)-1)/r));}
-function fvm(amt,ar,y){var m=y*12,r=Math.pow(1+ar/100,1/12)-1;if(m<=0)return 0;if(r===0)return amt*m;return amt*((Math.pow(1+r,m)-1)/r);}
+// 元利均等の毎月返済額（残り n か月）
+function pmt(bal,ar,n){var r=ar/100/12;if(n<=0)return 0;if(r===0)return bal/n;return bal*r/(1-Math.pow(1+r,-n));}
+
+// 1本のローンを最後まで月ごとに回す。金利は k 年目に lr + rise×min(k,riseY)/riseY、
+// 毎年の初めに残りの借入額・残りの月数で返済額を計算し直す
+function runLoan(loan,lr,rise,riseY,years){
+  var n=years*12,bal=loan,pay=0,pays=[],bals=[loan];
+  for(var m=0;m<n;m++){
+    var rate=Math.max(0,lr+rise*Math.min(Math.floor(m/12),riseY)/riseY);
+    if(m%12===0)pay=pmt(bal,rate,n-m);
+    bal=bal*(1+rate/100/12)-pay;
+    pays.push(pay);bals.push(Math.max(0,bal));
+  }
+  return{pays:pays,bals:bals};
+}
 
 function inputs(){
+  var custom=state.rise==='custom';
   return{
     loan:Math.max(0,gv('loanAmount'))*10000,
     lr:Math.max(0,gv('loanRate')),
@@ -398,7 +434,9 @@ function inputs(){
     tx:TAX[state.tax],
     usd:state.fx==='usd',
     fxEntry:gv('fxEntry')>0?gv('fxEntry'):150,
-    fxExit:gv('fxExit')>0?gv('fxExit'):150
+    fxExit:gv('fxExit')>0?gv('fxExit'):150,
+    rise:custom?Math.max(0,gv('riseAmt')):RISE[state.rise],
+    riseY:custom?Math.max(1,Math.round(gv('riseYears'))):10
   };
 }
 
@@ -407,29 +445,34 @@ function rateFor(tab){
   return tab==='bear'?Math.max(0.1,b-4):tab==='bull'?b+3:b;
 }
 
-// y年積み立てた投資の評価額（税引後・為替反映、円）
-function investValue(p,monthly,ir,y,fxExit,tx){
-  if(p.usd){
-    var usd=monthly/p.fxEntry,fvU=fvm(usd,ir,y),prU=usd*12*y;
-    return(prU+Math.max(0,fvU-prU)*(1-tx))*fxExit;
-  }
-  var fv=fvm(monthly,ir,y),pr=monthly*12*y;
-  return pr+Math.max(0,fv-pr)*(1-tx);
-}
-
-// 比べる時点は短期ローンの完済年。o.lr / o.fxExit で上書きできる
+// 比べる時点は短期ローンの完済年。o.lr / o.rise / o.fxExit で上書きできる
+// 毎月「短期の返済 − 長期の返済」＋追加投資を積み立てる。ドル建ては積立時レートでドルに換える
 function sim(ir,o){
   o=o||{};
   var p=inputs();
-  var lr=o.lr!=null?o.lr:p.lr,fxExit=o.fxExit!=null?o.fxExit:p.fxExit;
-  var sp=mp(p.loan,lr,p.sy),lp=mp(p.loan,lr,p.ly),diff=Math.max(0,sp-lp),monthly=diff+p.extra;
-  var y=p.sy,prin=monthly*12*y,gain=fvm(monthly,ir,y)-prin;
-  var value=investValue(p,monthly,ir,y,fxExit,p.tx);
-  var tax=investValue(p,monthly,ir,y,fxExit,0)-value;
-  var valueNoFx=prin+Math.max(0,gain)*(1-p.tx);
-  var remain=rb(p.loan,lr,p.ly,y*12);
-  return{p:p,ir:ir,lr:lr,fxExit:fxExit,sp:sp,lp:lp,diff:diff,monthly:monthly,years:y,
-    prin:prin,gain:gain,tax:tax,value:value,fxImpact:p.usd?value-valueNoFx:0,remain:remain,net:value-remain};
+  var lr=o.lr!=null?o.lr:p.lr,rise=o.rise!=null?o.rise:p.rise,fxExit=o.fxExit!=null?o.fxExit:p.fxExit;
+  var S=runLoan(p.loan,lr,rise,p.riseY,p.sy),L=runLoan(p.loan,lr,rise,p.riseY,p.ly);
+  var n=p.sy*12,mr=Math.pow(1+ir/100,1/12)-1,cur=p.usd?1/p.fxEntry:1,toYen=p.usd?fxExit:1;
+  function afterTax(b,pr,tx){return(pr+Math.max(0,b-pr)*(1-tx))*toYen;}
+
+  var bal=0,pr=0,diffMin=Infinity,invByYear=[0];
+  for(var m=0;m<n;m++){
+    var d=Math.max(0,S.pays[m]-L.pays[m]);
+    diffMin=Math.min(diffMin,d);
+    bal=bal*(1+mr)+(d+p.extra)*cur;pr+=(d+p.extra)*cur;
+    if((m+1)%12===0)invByYear.push(afterTax(bal,pr,p.tx));
+  }
+  var value=afterTax(bal,pr,p.tx),tax=afterTax(bal,pr,0)-value;
+  var prin=pr/cur,gain=bal/cur-prin,valueNoFx=prin+Math.max(0,gain)*(1-p.tx);
+  var remain=L.bals[n],loanByYear=[];
+  for(var y=0;y<=p.sy;y++)loanByYear.push(L.bals[y*12]);
+  function sum(a){return a.reduce(function(s,v){return s+v;},0);}
+  return{p:p,ir:ir,lr:lr,rise:rise,fxExit:fxExit,years:p.sy,
+    sp:S.pays[0],lp:L.pays[0],spMax:Math.max.apply(null,S.pays),lpMax:Math.max.apply(null,L.pays),
+    intS:sum(S.pays)-p.loan,intL:sum(L.pays)-p.loan,
+    diff:Math.max(0,S.pays[0]-L.pays[0]),diffMin:diffMin,monthly:Math.max(0,S.pays[0]-L.pays[0])+p.extra,
+    prin:prin,gain:gain,tax:tax,value:value,fxImpact:p.usd?value-valueNoFx:0,remain:remain,net:value-remain,
+    invByYear:invByYear,loanByYear:loanByYear};
 }
 
 // 損益分岐：これを下回ると損になる利回り。null=30%でも損、0=利回りゼロでも得
@@ -448,28 +491,54 @@ function findFxBreakeven(ir){
   for(var i=0;i<50;i++){var mid=(lo+hi)/2;sim(ir,{fxExit:mid}).net>0?hi=mid:lo=mid;}
   return(lo+hi)/2;
 }
+// 損益分岐：riseY 年でこれ以上上がると損になる金利の上げ幅。null=今のままでも損、Infinity=+20%でも得
+function findRiseBreakeven(ir){
+  if(sim(ir,{rise:0}).net<=0)return null;
+  if(sim(ir,{rise:20}).net>0)return Infinity;
+  var lo=0,hi=20;
+  for(var i=0;i<50;i++){var mid=(lo+hi)/2;sim(ir,{rise:mid}).net>0?lo=mid:hi=mid;}
+  return(lo+hi)/2;
+}
 
 /* ── ステップ：入力チェックと補足表示 ── */
 function validateStep(n){
   var p=inputs();
-  if(n===1&&p.loan<=0)return'借入額を入力してください。';
+  if(n===1){
+    if(p.loan<=0)return'借入額を入力してください。';
+    if(state.rise==='custom'){
+      var ry=gv('riseYears'),ra=gv('riseAmt');
+      if(ry<1||ry>35)return'何年かけて上がるかは、1〜35年で入力してください。';
+      if(ra<0||ra>10)return'上がる幅は、0〜10%で入力してください。';
+    }
+  }
   if(n===2&&p.ly<=p.sy)return'長い方の期間を、短い方より長くしてください。';
   return'';
+}
+
+function renderStep1Hint(){
+  var p=inputs(),el=$('step1Hint');
+  $('riseFields').hidden=state.rise!=='custom';
+  el.hidden=!(p.rise>0)||!!validateStep(1);
+  if(el.hidden)return;
+  el.innerHTML='年'+pct(p.lr)+' → '+p.riseY+'年後に <b>年'+pct(p.lr+p.rise)+'</b> まで上がる想定です。<br>'+
+    '毎年少しずつ上がり、その後は横ばいとして計算します。';
 }
 
 function renderStep2Hint(){
   var p=inputs(),el=$('step2Hint');
   el.hidden=p.ly<=p.sy||p.loan<=0;
   if(el.hidden)return;
-  var sp=mp(p.loan,p.lr,p.sy),lp=mp(p.loan,p.lr,p.ly);
+  var sp=pmt(p.loan,p.lr,p.sy*12),lp=pmt(p.loan,p.lr,p.ly*12);
   el.innerHTML='月々の返済は '+p.sy+'年なら '+yen(sp)+'、'+p.ly+'年なら '+yen(lp)+'。<br>'+
-    '長くすると毎月 <b>'+yen(sp-lp)+'</b> 浮きます。この分を投資に回します。';
+    '長くすると毎月 <b>'+yen(sp-lp)+'</b> 浮きます。この分を投資に回します。'+
+    (p.rise>0?'<br>（今の金利での額です。金利が上がると返済も浮く額も変わります）':'');
 }
 
 function refreshStep(n){
   var sec=$('step'+n),msg=validateStep(n),err=sec.querySelector('.err');
   err.textContent=msg;err.hidden=!msg;
   sec.querySelector('[data-primary]').disabled=!!msg;
+  if(n===1)renderStep1Hint();
   if(n===2)renderStep2Hint();
   if(n===4)$('fxFields').hidden=state.fx!=='usd';
 }
@@ -520,10 +589,18 @@ document.querySelectorAll('.screen[data-step]').forEach(function(sec){
 window.addEventListener('hashchange',function(){show(location.hash.slice(1));});
 
 /* ── 描画：結論 ── */
+var EVEN_RANGE=100000;// 差がこれ未満なら「ほぼ同じ」
+
 function renderVerdict(r){
-  var pos=r.net>=0,p=r.p;
-  $('verdict').className='verdict '+(pos?'good':'bad');
-  $('verdictLead').textContent=p.ly+'年ローンにして浮いたお金を投資すると（'+p.sy+'年ローンと比べて）';
+  var pos=r.net>=0,p=r.p,even=Math.abs(r.net)<EVEN_RANGE;
+  $('verdict').className='verdict '+(even?'even':pos?'good':'bad');
+  $('verdictLead').textContent=(p.rise>0?'金利が'+p.riseY+'年で年'+pct(p.lr+p.rise)+'まで上がる場合、':'')+
+    p.ly+'年ローンにして浮いたお金を投資すると（'+p.sy+'年ローンと比べて）';
+  if(even){
+    $('verdictVal').innerHTML='ほぼ同じ<span>'+signed(r.net)+'</span>';
+    $('verdictText').textContent=r.years+'年後、投資の残高 '+man(r.value)+' で、残っているローン '+man(r.remain)+' をちょうど返せるくらいです。得も損もほとんどありません。';
+    return;
+  }
   $('verdictVal').innerHTML=(pos?'+':'−')+man(r.net)+'<span>'+(pos?'おトク':'損')+'</span>';
   $('verdictText').textContent=pos
     ?r.years+'年後、残っているローン '+man(r.remain)+' を投資から一括で返しても、手元に '+man(r.net)+' 残ります。'
@@ -541,6 +618,17 @@ function renderConditions(be,r){
     var margin=base-be,cls=margin>=3?'good':margin>=0?'warn':'bad';
     var sub=margin>=0?'今の想定（基本）は年'+base+'% … あと'+margin.toFixed(1)+'%下がっても大丈夫':'今の想定（基本）の年'+base+'%では、すでに損になります';
     html+='<li class="'+cls+'">投資の利回りが <b>年'+be.toFixed(1)+'%</b> を下回ると損<small>'+sub+'</small></li>';
+  }
+  var p=r.p,riseBe=findRiseBreakeven(r.ir),rsc=SC_LABEL[state.tab]+'シナリオ・年'+r.ir.toFixed(1)+'%の場合';
+  if(riseBe===null){
+    html+='<li class="bad">ローン金利が今のままでも<b>損</b>になります<small>'+rsc+'</small></li>';
+  } else if(riseBe===Infinity){
+    html+='<li class="good">ローン金利が大きく上がっても<b>損はしません</b><small>'+rsc+'</small></li>';
+  } else {
+    var rMargin=riseBe-p.rise,rCls=rMargin>=1?'good':rMargin>=0?'warn':'bad';
+    var now=p.rise>0?'今の想定は年'+pct(p.lr+p.rise)+'まで':'今は年'+pct(p.lr)+'のまま';
+    var rSub=rMargin>=0?now+' … あと'+rMargin.toFixed(1)+'%上がっても大丈夫':'今の想定（年'+pct(p.lr+p.rise)+'まで上がる）では、すでに損になります';
+    html+='<li class="'+rCls+'">ローン金利が'+p.riseY+'年で <b>年'+(p.lr+riseBe).toFixed(1)+'%</b> まで上がると損<small>'+rSub+'（'+rsc+'）</small></li>';
   }
   if(r.p.usd){
     var fxBe=findFxBreakeven(r.ir),sc=SC_LABEL[state.tab]+'シナリオ・年'+r.ir.toFixed(1)+'%の場合';
@@ -567,11 +655,7 @@ function renderChart(r){
   ctx.setTransform(dpr,0,0,dpr,0,0);
   ctx.clearRect(0,0,W,H);
 
-  var p=r.p,years=r.years,inv=[],loan=[];
-  for(var y=0;y<=years;y++){
-    inv.push(investValue(p,r.monthly,r.ir,y,r.fxExit,p.tx));
-    loan.push(rb(p.loan,r.lr,p.ly,y*12));
-  }
+  var p=r.p,years=r.years,inv=r.invByYear,loan=r.loanByYear;
   var maxV=Math.max.apply(null,inv.concat(loan).concat([1]));
   var pl=48,pr=10,pt=22,pb=24,cw=W-pl-pr,ch=H-pt-pb;
   function xp(y){return pl+y/years*cw;}
@@ -628,7 +712,7 @@ function renderChart(r){
 function renderSummary(r){
   var p=r.p;
   var rows=[
-    [1,'ローン',man(p.loan)+'・金利 年'+p.lr+'%'],
+    [1,'ローン',man(p.loan)+'・金利 年'+pct(p.lr)+(p.rise>0?' → '+p.riseY+'年で年'+pct(p.lr+p.rise):'（変わらない）')],
     [2,'返済期間',p.sy+'年 と '+p.ly+'年（毎月 '+yen(r.diff)+' 浮く）'],
     [3,'投資','利回り 年'+rateFor('base')+'%'+(p.extra>0?'・追加 毎月'+yen(p.extra):'')+'・'+(state.tax==='nisa'?'NISA':'特定口座')],
     [4,'投資先',p.usd?'ドル建て（'+p.fxEntry+'円 → '+p.fxExit+'円）':'円建て']
@@ -644,13 +728,15 @@ $('summary').addEventListener('click',function(e){
 
 /* ── 描画：数字の内訳 ── */
 function renderBreakdown(r){
-  var p=r.p;
+  var p=r.p,up=p.rise>0;
+  // 金利が変わる場合は「最初」と「最高／最少」を2行で出す
+  function range(first,other,label){return up?yen(first)+'<br><small>'+label+' '+yen(other)+'</small>':yen(first);}
   var rows=[
-    ['毎月の返済（'+p.sy+'年ローン）',yen(r.sp)],
-    ['毎月の返済（'+p.ly+'年ローン）',yen(r.lp)],
-    ['毎月の投資額'+(p.extra>0?'（差額＋追加）':'（返済の差額）'),yen(r.monthly)],
-    ['利息の合計（'+p.sy+'年ローン）',yen(r.sp*p.sy*12-p.loan)],
-    ['利息の合計（'+p.ly+'年ローン）',yen(r.lp*p.ly*12-p.loan)],
+    ['毎月の返済（'+p.sy+'年ローン）'+(up?'・最初':''),range(r.sp,r.spMax,'最高')],
+    ['毎月の返済（'+p.ly+'年ローン）'+(up?'・最初':''),range(r.lp,r.lpMax,'最高')],
+    ['毎月の投資額'+(p.extra>0?'（差額＋追加）':'（返済の差額）')+(up?'・最初':''),range(r.monthly,r.diffMin+p.extra,'最少')],
+    ['利息の合計（'+p.sy+'年ローン）',yen(r.intS)],
+    ['利息の合計（'+p.ly+'年ローン）',yen(r.intL)],
     ['sep',r.years+'年後（'+SC_LABEL[state.tab]+' 年'+r.ir.toFixed(1)+'%）'],
     ['投資した元本',yen(r.prin)],
     ['運用で増えた分',signed(r.gain),r.gain>=0?'good-t':'bad-t'],
@@ -669,9 +755,9 @@ function renderBreakdown(r){
 
 /* ── 描画：金利の歴史 ── */
 function renderHistory(r){
-  $('histLead').textContent='ローン金利がこの水準だったら得か損か（'+SC_LABEL[state.tab]+'シナリオ・利回り年'+r.ir.toFixed(1)+'%で計算）';
+  $('histLead').textContent='ローン金利が最初からずっとこの水準だったら得か損か（'+SC_LABEL[state.tab]+'シナリオ・利回り年'+r.ir.toFixed(1)+'%で計算）';
   $('histList').innerHTML=HISTORY.map(function(h){
-    var ok=sim(r.ir,{lr:h.rate}).net>=0;
+    var ok=sim(r.ir,{lr:h.rate,rise:0}).net>=0;
     var badges='<span class="badge '+(ok?'good':'bad')+'">'+(ok?'この金利でも得':'この金利だと損')+'</span>';
     if(Math.abs(h.rate-r.p.lr)<0.5)badges+='<span class="badge accent">今の金利に近い</span>';
     return item(h.rate+'%',h,badges);
@@ -727,6 +813,10 @@ $('taxSeg').addEventListener('click',function(e){
   var b=e.target.closest('button');if(!b)return;
   state.tax=b.dataset.v;setSeg('taxSeg',state.tax);
 });
+$('riseSeg').addEventListener('click',function(e){
+  var b=e.target.closest('button');if(!b)return;
+  state.rise=b.dataset.v;setSeg('riseSeg',state.rise);refreshStep(1);
+});
 $('fxSeg').addEventListener('click',function(e){
   var b=e.target.closest('button');if(!b)return;
   state.fx=b.dataset.v;setSeg('fxSeg',state.fx);refreshStep(4);
@@ -753,7 +843,7 @@ $('restartBtn').addEventListener('click',function(){
 });
 
 /* ── URL共有 ── */
-var URL_PARAMS={la:'loanAmount',lr:'loanRate',sy:'shortYears',ly:'longYears',ir:'investmentRate',em:'extraMonthly',fe:'fxEntry',fx:'fxExit'};
+var URL_PARAMS={la:'loanAmount',lr:'loanRate',sy:'shortYears',ly:'longYears',ir:'investmentRate',em:'extraMonthly',fe:'fxEntry',fx:'fxExit',ry:'riseYears',ra:'riseAmt'};
 
 // 設定値付きのURLなら true を返す
 function loadFromURL(){
@@ -761,6 +851,9 @@ function loadFromURL(){
   Object.keys(URL_PARAMS).forEach(function(k){if(q.has(k)){$(URL_PARAMS[k]).value=q.get(k);found=true;}});
   if(q.get('fm')==='jpy'||q.get('fm')==='usd'){state.fx=q.get('fm');setSeg('fxSeg',state.fx);}
   if(SC_LABEL[q.get('sc')])setTab(q.get('sc'));
+  // 金利の動き（rm がない旧版のURLは「変わらない」）
+  var rm=q.get('rm');
+  if(rm==='custom'||RISE[rm]!=null){state.rise=rm;setSeg('riseSeg',rm);}
   // 旧版の tx / txa（税率の数値）にも対応
   var tm=q.get('tm');
   if(!tm&&(q.has('tx')||q.has('txa')))tm=parseFloat(q.get('txa')||q.get('tx'))>0?'tokutei':'nisa';
@@ -771,7 +864,7 @@ function loadFromURL(){
 function shareURL(){
   var q=new URLSearchParams();
   Object.keys(URL_PARAMS).forEach(function(k){q.set(k,$(URL_PARAMS[k]).value);});
-  q.set('tm',state.tax);q.set('fm',state.fx);q.set('sc',state.tab);
+  q.set('tm',state.tax);q.set('fm',state.fx);q.set('sc',state.tab);q.set('rm',state.rise);
   return location.origin+location.pathname+'?'+q.toString()+'#result';
 }
 $('shareBtn').addEventListener('click',function(){
