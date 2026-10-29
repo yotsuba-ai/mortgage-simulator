@@ -9,7 +9,7 @@
 :root{
   --bg:#f4f5f7;--surface:#ffffff;--surface2:#f1f3f5;--border:#e0e2e8;
   --text:#111318;--muted:#6b7280;
-  --accent:#2563eb;--accent-bg:#eff6ff;--accent-text:#1d4ed8;
+  --accent:#2563eb;--accent-bg:#eff6ff;--accent-text:#1d4ed8;--btn:#2563eb;
   --good:#059669;--good-bg:#ecfdf5;--good-text:#065f46;
   --bad:#dc2626;--bad-bg:#fef2f2;--bad-text:#991b1b;
   --warn:#d97706;--warn-bg:#fffbeb;--warn-text:#92400e;
@@ -28,22 +28,36 @@
 body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Noto Sans JP',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.6;padding-bottom:40px;-webkit-text-size-adjust:100%}
 [hidden]{display:none!important}
 
-/* header */
-.header{display:flex;align-items:center;justify-content:space-between;gap:12px;max-width:560px;margin:0 auto;padding:18px 16px 4px}
-.header h1{font-size:17px;font-weight:800;line-height:1.35}
+/* header / 進捗 */
+.header{max-width:560px;margin:0 auto;padding:16px 16px 0}
+.header h1{font-size:15px;font-weight:800;line-height:1.35}
 .header p{font-size:12px;color:var(--muted)}
-.share-btn{flex-shrink:0;background:var(--accent-bg);color:var(--accent-text);border:1px solid var(--accent);border-radius:var(--radius-sm);padding:7px 14px;font:inherit;font-size:13px;font-weight:700;cursor:pointer}
+.progress{max-width:560px;margin:12px auto 0;padding:0 16px}
+.progress-label{font-size:12px;color:var(--muted);font-weight:700;margin-bottom:6px;font-variant-numeric:tabular-nums}
+.progress-bar{height:4px;background:var(--border);border-radius:2px;overflow:hidden}
+.progress-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .25s ease}
 
 .page{max-width:560px;margin:0 auto;padding:0 16px}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-top:12px}
 .card-title{font-size:13px;font-weight:700;color:var(--muted);margin-bottom:10px}
 
+/* ステップ */
+.q{font-size:22px;font-weight:800;line-height:1.35;margin-top:20px;outline:none}
+.q-sub{font-size:13px;color:var(--muted);margin-top:4px}
+.err{color:var(--bad-text);background:var(--bad-bg);padding:10px 12px;border-radius:var(--radius-sm);font-size:13px;margin-top:10px}
+.nav{display:flex;gap:8px;margin-top:20px}
+.btn{flex:1;padding:14px 10px;border-radius:12px;font:inherit;font-size:16px;font-weight:700;cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--text)}
+.btn-primary{flex:2;background:var(--btn);border-color:var(--btn);color:#fff}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed}
+.hint{margin-top:12px;padding:12px 14px;background:var(--accent-bg);color:var(--accent-text);border-radius:var(--radius-sm);font-size:13px;line-height:1.7}
+.hint b{font-size:15px;font-variant-numeric:tabular-nums}
+
 /* 結論 */
-.verdict{margin-top:12px;border-radius:var(--radius);padding:20px 18px 16px;border:2px solid var(--border);background:var(--surface)}
+.verdict{margin-top:16px;border-radius:var(--radius);padding:20px 18px 16px;border:2px solid var(--border);background:var(--surface)}
 .verdict.good{background:var(--good-bg);border-color:var(--good)}
 .verdict.bad{background:var(--bad-bg);border-color:var(--bad)}
 .verdict-lead{font-size:13px;font-weight:600;color:var(--muted)}
-.verdict-val{font-size:40px;font-weight:800;line-height:1.15;margin:4px 0 8px;font-variant-numeric:tabular-nums;letter-spacing:-.5px}
+.verdict-val{font-size:40px;font-weight:800;line-height:1.15;margin:4px 0 8px;font-variant-numeric:tabular-nums;letter-spacing:-.5px;outline:none}
 .verdict-val span{font-size:20px;margin-left:4px}
 .verdict-text{font-size:13px;line-height:1.7}
 .verdict.good .verdict-lead,.verdict.good .verdict-text{color:var(--good-text)}
@@ -54,6 +68,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Noto Sans JP'
 .tab{flex:1;padding:8px 4px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);color:var(--muted);font:inherit;font-size:13px;font-weight:700;cursor:pointer;line-height:1.3}
 .tab span{display:block;font-size:11px;font-weight:500;font-variant-numeric:tabular-nums}
 .tab.on{background:var(--text);color:var(--surface);border-color:var(--text)}
+
+/* 利回りスライダー */
+.slider-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.slider-head label{font-size:14px;font-weight:700}
+.slider-val{font-size:18px;font-weight:800;color:var(--accent-text);font-variant-numeric:tabular-nums}
+.slider{width:100%;margin:12px 0 2px;accent-color:var(--accent);height:28px}
+.slider-scale{display:flex;justify-content:space-between;font-size:11px;color:var(--muted)}
 
 /* 損をしない条件 */
 .cond{list-style:none}
@@ -73,32 +94,33 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Noto Sans JP'
 .lg-loan::before{background:var(--bad)}
 
 /* 入力 */
-.field{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--border)}
-.card-title+.field,summary+.field{border-top:none}
-.field label,.field .lbl{font-size:14px;font-weight:600;line-height:1.35}
-.field small{display:block;font-size:11px;font-weight:400;color:var(--muted)}
-.in{display:flex;align-items:center;gap:4px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 10px}
+.field{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid var(--border)}
+.card>.field:first-child{border-top:none;padding-top:2px}
+.field label,.field .lbl{font-size:15px;font-weight:600;line-height:1.35}
+.field small{display:block;font-size:12px;font-weight:400;color:var(--muted)}
+.in{display:flex;align-items:center;gap:4px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 10px}
 .in:focus-within{border-color:var(--accent)}
-.in input{width:64px;border:none;background:transparent;font:inherit;font-size:16px;text-align:right;color:var(--text);outline:none;font-variant-numeric:tabular-nums;-moz-appearance:textfield;appearance:textfield}
+.in input{width:72px;border:none;background:transparent;font:inherit;font-size:18px;text-align:right;color:var(--text);outline:none;font-variant-numeric:tabular-nums;-moz-appearance:textfield;appearance:textfield}
 .in input::-webkit-inner-spin-button,.in input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
-.in span{font-size:12px;color:var(--muted);white-space:nowrap}
-.in-pair{display:flex;align-items:center;gap:6px}
-.in-pair input{width:34px}
-.vs{font-size:12px;color:var(--muted)}
-.field.col{flex-direction:column;align-items:stretch;gap:6px}
+.in span{font-size:13px;color:var(--muted);white-space:nowrap}
+.field.col{flex-direction:column;align-items:stretch;gap:8px}
 .seg{display:flex;gap:6px}
-.seg button{flex:1;padding:8px 6px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface2);color:var(--muted);font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.seg button{flex:1;padding:12px 6px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface2);color:var(--muted);font:inherit;font-size:14px;font-weight:600;cursor:pointer;line-height:1.35}
+.seg button small{display:block;font-size:11px;font-weight:400}
 .seg button.on{background:var(--accent-bg);color:var(--accent-text);border-color:var(--accent)}
-.diff-note{margin-top:10px;padding:10px 12px;background:var(--accent-bg);color:var(--accent-text);border-radius:var(--radius-sm);font-size:13px}
-.diff-note.bad{background:var(--bad-bg);color:var(--bad-text)}
+
+/* 入力した条件 */
+.sum-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--border)}
+.sum-row:first-of-type{border-top:none;padding-top:0}
+.sum-k{font-size:12px;color:var(--muted);font-weight:700}
+.sum-v{font-size:14px;font-weight:600;font-variant-numeric:tabular-nums}
+.link-btn{flex-shrink:0;background:none;border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 12px;font:inherit;font-size:12px;font-weight:700;color:var(--accent-text);cursor:pointer}
 
 /* 折りたたみ */
 summary{cursor:pointer;font-size:14px;font-weight:700;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:8px}
 summary::-webkit-details-marker{display:none}
 summary::after{content:'＋';color:var(--muted);font-weight:400}
 details[open]>summary::after{content:'−'}
-details.more{margin-top:12px;border-top:1px solid var(--border);padding-top:12px}
-details.more[open]>summary{margin-bottom:4px}
 .fold-lead{font-size:12px;color:var(--muted);margin:10px 0 2px}
 
 /* 内訳 */
@@ -134,89 +156,137 @@ details.more[open]>summary{margin-bottom:4px}
 <body>
 
 <header class="header">
-  <div>
-    <h1>住宅ローン差額投資シミュレーター</h1>
-    <p>ローンを長く組んで、浮いたお金を投資したら得か損か</p>
-  </div>
-  <button class="share-btn" id="shareBtn">共有</button>
+  <h1>住宅ローン差額投資シミュレーター</h1>
+  <p>ローンを長く組んで、浮いたお金を投資したら得か損か</p>
 </header>
+
+<div class="progress" id="progress">
+  <div class="progress-label" id="progressLabel"></div>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+</div>
 
 <main class="page">
 
-<section class="verdict" id="verdict">
-  <div class="verdict-lead" id="verdictLead"></div>
-  <div class="verdict-val" id="verdictVal">—</div>
-  <p class="verdict-text" id="verdictText"></p>
-  <div class="tabs">
-    <button class="tab" data-tab="bear">悲観<span id="rate-bear"></span></button>
-    <button class="tab on" data-tab="base">基本<span id="rate-base"></span></button>
-    <button class="tab" data-tab="bull">楽観<span id="rate-bull"></span></button>
+<!-- ステップ1：ローン -->
+<section class="screen" id="step1" data-step="1" hidden>
+  <h2 class="q" tabindex="-1">ローンについて教えてください</h2>
+  <p class="q-sub">借りる金額と、ローンの金利（年率）を入れてください。</p>
+  <div class="card">
+    <div class="field"><label for="loanAmount">借入額</label><div class="in"><input id="loanAmount" type="number" inputmode="decimal" min="0" value="4000"><span>万円</span></div></div>
+    <div class="field"><label for="loanRate">ローン金利<small>年率</small></label><div class="in"><input id="loanRate" type="number" inputmode="decimal" min="0" step="0.01" value="2"><span>%</span></div></div>
   </div>
+  <p class="err" hidden></p>
+  <div class="nav"><button class="btn btn-primary" data-primary>次へ</button></div>
 </section>
 
-<section class="card" id="condCard">
-  <h2 class="card-title">損をしない条件</h2>
-  <ul class="cond" id="conditions"></ul>
+<!-- ステップ2：返済期間 -->
+<section class="screen" id="step2" data-step="2" hidden>
+  <h2 class="q" tabindex="-1">返済期間をくらべます</h2>
+  <p class="q-sub">短い期間で返す場合と、期間を長くして月々を軽くする場合をくらべます。</p>
+  <div class="card">
+    <div class="field"><label for="shortYears">短い方<small>くらべる相手</small></label><div class="in"><input id="shortYears" type="number" inputmode="numeric" min="1" value="35"><span>年</span></div></div>
+    <div class="field"><label for="longYears">長い方<small>実際に組む期間</small></label><div class="in"><input id="longYears" type="number" inputmode="numeric" min="1" value="50"><span>年</span></div></div>
+  </div>
+  <div class="hint" id="step2Hint"></div>
+  <p class="err" hidden></p>
+  <div class="nav"><button class="btn" data-back>戻る</button><button class="btn btn-primary" data-primary>次へ</button></div>
 </section>
 
-<section class="card" id="chartCard">
-  <h2 class="card-title" id="chartTitle">投資の残高とローンの残り</h2>
-  <canvas id="timeChart" class="chart"></canvas>
-  <div class="legend"><span class="lg-invest">投資の残高</span><span class="lg-loan" id="legendLoan">長期ローンの残り</span></div>
-</section>
-
-<section class="card">
-  <h2 class="card-title">条件を入力</h2>
-  <div class="field"><label for="loanAmount">借入額</label><div class="in"><input id="loanAmount" type="number" inputmode="decimal" min="0" value="4000"><span>万円</span></div></div>
-  <div class="field"><label for="loanRate">ローン金利<small>年率</small></label><div class="in"><input id="loanRate" type="number" inputmode="decimal" min="0" step="0.01" value="2"><span>%</span></div></div>
-  <div class="field"><span class="lbl">返済期間<small>短い方と長い方を比べる</small></span>
-    <div class="in-pair">
-      <div class="in"><input id="shortYears" type="number" inputmode="numeric" min="1" value="35" aria-label="短い方の返済期間"><span>年</span></div>
-      <span class="vs">と</span>
-      <div class="in"><input id="longYears" type="number" inputmode="numeric" min="1" value="50" aria-label="長い方の返済期間"><span>年</span></div>
+<!-- ステップ3：投資 -->
+<section class="screen" id="step3" data-step="3" hidden>
+  <h2 class="q" tabindex="-1">浮いたお金を投資します</h2>
+  <p class="q-sub">投資で年に何%増えると想定するかを入れてください。結果では、この値から悲観（−4%）と楽観（＋3%）も自動で計算します。</p>
+  <div class="card">
+    <div class="field"><label for="investmentRate">投資の利回り<small>年率</small></label><div class="in"><input id="investmentRate" type="number" inputmode="decimal" min="0" step="0.1" value="7"><span>%</span></div></div>
+    <div class="field"><label for="extraMonthly">毎月の追加投資<small>差額とは別に上乗せする額（なければ0）</small></label><div class="in"><input id="extraMonthly" type="number" inputmode="decimal" min="0" value="0"><span>万円</span></div></div>
+    <div class="field col"><span class="lbl">どの口座で投資しますか</span>
+      <div class="seg" id="taxSeg"><button data-v="nisa" class="on">NISA<small>利益に税金なし</small></button><button data-v="tokutei">特定口座<small>利益に20.315%</small></button></div>
     </div>
   </div>
-  <div class="field"><label for="investmentRate">投資の利回り<small>年率・基本シナリオ</small></label><div class="in"><input id="investmentRate" type="number" inputmode="decimal" min="0" step="0.1" value="7"><span>%</span></div></div>
-  <p class="diff-note" id="diffNote"></p>
+  <p class="err" hidden></p>
+  <div class="nav"><button class="btn" data-back>戻る</button><button class="btn btn-primary" data-primary>次へ</button></div>
+</section>
 
-  <details class="more">
-    <summary>詳細設定</summary>
-    <div class="field"><label for="extraMonthly">毎月の追加投資<small>差額とは別に上乗せする額</small></label><div class="in"><input id="extraMonthly" type="number" inputmode="decimal" min="0" value="0"><span>万円</span></div></div>
-    <div class="field col"><span class="lbl">税金</span>
-      <div class="seg" id="taxSeg"><button data-v="nisa" class="on">NISA（非課税）</button><button data-v="tokutei">特定口座（20.315%）</button></div>
-    </div>
-    <div class="field col"><span class="lbl">投資先</span>
-      <div class="seg" id="fxSeg"><button data-v="jpy">円建て</button><button data-v="usd" class="on">ドル建て</button></div>
+<!-- ステップ4：投資先 -->
+<section class="screen" id="step4" data-step="4" hidden>
+  <h2 class="q" tabindex="-1">何で投資しますか</h2>
+  <p class="q-sub">米国株などドルで持つ投資なら「ドル建て」を選ぶと、為替の影響も計算します。</p>
+  <div class="card">
+    <div class="field col">
+      <div class="seg" id="fxSeg"><button data-v="jpy">円建て<small>為替の影響なし</small></button><button data-v="usd" class="on">ドル建て<small>為替の影響あり</small></button></div>
     </div>
     <div id="fxFields">
       <div class="field"><label for="fxEntry">積立時の為替<small>毎月ドルに換えるレート</small></label><div class="in"><input id="fxEntry" type="number" inputmode="decimal" min="1" value="150"><span>円/ドル</span></div></div>
       <div class="field"><label for="fxExit">売却時の為替<small>最後に円に戻すレート</small></label><div class="in"><input id="fxExit" type="number" inputmode="decimal" min="1" value="150"><span>円/ドル</span></div></div>
     </div>
-  </details>
+  </div>
+  <p class="err" hidden></p>
+  <div class="nav"><button class="btn" data-back>戻る</button><button class="btn btn-primary" data-primary>結果を見る</button></div>
 </section>
 
-<details class="card" id="bdFold">
-  <summary>数字の内訳を見る</summary>
-  <table class="bd" id="breakdown"></table>
-</details>
+<!-- 結果 -->
+<section class="screen" id="result" hidden>
+  <div class="verdict" id="verdict">
+    <div class="verdict-lead" id="verdictLead"></div>
+    <div class="verdict-val" id="verdictVal" tabindex="-1">—</div>
+    <p class="verdict-text" id="verdictText"></p>
+    <div class="tabs">
+      <button class="tab" data-tab="bear">悲観<span id="rate-bear"></span></button>
+      <button class="tab on" data-tab="base">基本<span id="rate-base"></span></button>
+      <button class="tab" data-tab="bull">楽観<span id="rate-bull"></span></button>
+    </div>
+  </div>
 
-<details class="card">
-  <summary>過去の住宅ローン金利を見る</summary>
-  <p class="fold-lead" id="histLead"></p>
-  <div id="histList"></div>
-</details>
+  <div class="card">
+    <div class="slider-head"><label for="rateSlider">利回りを動かしてみる</label><span class="slider-val" id="sliderVal"></span></div>
+    <input class="slider" id="rateSlider" type="range" min="0" max="15" step="0.5" value="7">
+    <div class="slider-scale"><span>0%</span><span>基本シナリオの利回り</span><span>15%</span></div>
+  </div>
 
-<details class="card" id="fxHistFold">
-  <summary>過去のドル円レートを見る</summary>
-  <p class="fold-lead" id="fxHistLead"></p>
-  <div id="fxHistList"></div>
-</details>
+  <div class="card">
+    <h2 class="card-title">損をしない条件</h2>
+    <ul class="cond" id="conditions"></ul>
+  </div>
 
-<p class="note">
-  ※ 元利均等返済・ボーナス返済なし。投資は毎月積立の複利で計算しています。<br>
-  ※ 比べる時点は「短い方のローンが終わる年」です。利回りは元本保証ではありません。<br>
-  ※ 金利の歴史は変動型住宅ローン金利（主要都市銀行）を参考にしています。
-</p>
+  <div class="card">
+    <h2 class="card-title" id="chartTitle">投資の残高とローンの残り</h2>
+    <canvas id="timeChart" class="chart"></canvas>
+    <div class="legend"><span class="lg-invest">投資の残高</span><span class="lg-loan" id="legendLoan">長期ローンの残り</span></div>
+  </div>
+
+  <div class="card">
+    <h2 class="card-title">入力した条件</h2>
+    <div id="summary"></div>
+  </div>
+
+  <details class="card">
+    <summary>数字の内訳を見る</summary>
+    <table class="bd" id="breakdown"></table>
+  </details>
+
+  <details class="card">
+    <summary>過去の住宅ローン金利を見る</summary>
+    <p class="fold-lead" id="histLead"></p>
+    <div id="histList"></div>
+  </details>
+
+  <details class="card" id="fxHistFold">
+    <summary>過去のドル円レートを見る</summary>
+    <p class="fold-lead" id="fxHistLead"></p>
+    <div id="fxHistList"></div>
+  </details>
+
+  <div class="nav">
+    <button class="btn" id="restartBtn">最初からやり直す</button>
+    <button class="btn btn-primary" id="shareBtn">結果を共有</button>
+  </div>
+
+  <p class="note">
+    ※ 元利均等返済・ボーナス返済なし。投資は毎月積立の複利で計算しています。<br>
+    ※ 比べる時点は「短い方のローンが終わる年」です。利回りは元本保証ではありません。<br>
+    ※ 金利の歴史は変動型住宅ローン金利（主要都市銀行）を参考にしています。
+  </p>
+</section>
 
 </main>
 
@@ -287,7 +357,9 @@ var HISTORY=[
    event:'戦後復興から高度経済成長期にかけて金利は10%以上が当たり前。現在とは全く異なる経済・金融環境で、住宅購入は一部の富裕層のみが可能だった時代。'},
 ];
 
-var state={tab:'base',tax:'nisa',fx:'usd'};
+var SCREENS=['step1','step2','step3','step4','result'];
+var STEP_COUNT=4;
+var state={tab:'base',tax:'nisa',fx:'usd',screen:null,seenResult:false};
 var TAX={nisa:0,tokutei:0.20315};
 var SC_LABEL={bear:'悲観',base:'基本',bull:'楽観'};
 
@@ -377,6 +449,76 @@ function findFxBreakeven(ir){
   return(lo+hi)/2;
 }
 
+/* ── ステップ：入力チェックと補足表示 ── */
+function validateStep(n){
+  var p=inputs();
+  if(n===1&&p.loan<=0)return'借入額を入力してください。';
+  if(n===2&&p.ly<=p.sy)return'長い方の期間を、短い方より長くしてください。';
+  return'';
+}
+
+function renderStep2Hint(){
+  var p=inputs(),el=$('step2Hint');
+  el.hidden=p.ly<=p.sy||p.loan<=0;
+  if(el.hidden)return;
+  var sp=mp(p.loan,p.lr,p.sy),lp=mp(p.loan,p.lr,p.ly);
+  el.innerHTML='月々の返済は '+p.sy+'年なら '+yen(sp)+'、'+p.ly+'年なら '+yen(lp)+'。<br>'+
+    '長くすると毎月 <b>'+yen(sp-lp)+'</b> 浮きます。この分を投資に回します。';
+}
+
+function refreshStep(n){
+  var sec=$('step'+n),msg=validateStep(n),err=sec.querySelector('.err');
+  err.textContent=msg;err.hidden=!msg;
+  sec.querySelector('[data-primary]').disabled=!!msg;
+  if(n===2)renderStep2Hint();
+  if(n===4)$('fxFields').hidden=state.fx!=='usd';
+}
+
+/* ── 画面切替（URL の #step1〜#result と連動） ── */
+function go(screen){
+  if(location.hash==='#'+screen)show(screen);
+  else location.hash=screen;
+}
+
+function show(screen){
+  if(SCREENS.indexOf(screen)<0)screen='step1';
+  // 手前のステップに未入力・不正があれば、そこへ戻す
+  var target=screen==='result'?STEP_COUNT:Number(screen.slice(4))-1;
+  for(var n=1;n<=target;n++){
+    if(validateStep(n)){screen='step'+n;history.replaceState(null,'','#'+screen);break;}
+  }
+  state.screen=screen;
+  SCREENS.forEach(function(s){$(s).hidden=s!==screen;});
+
+  var isStep=screen!=='result';
+  $('progress').hidden=!isStep;
+  if(isStep){
+    var n2=Number(screen.slice(4));
+    $('progressLabel').textContent='ステップ '+n2+' / '+STEP_COUNT;
+    $('progressFill').style.width=(n2/STEP_COUNT*100)+'%';
+    $(screen).querySelector('[data-primary]').textContent=state.seenResult?'結果に戻る':n2===STEP_COUNT?'結果を見る':'次へ';
+    refreshStep(n2);
+  } else {
+    state.seenResult=true;
+    calc();
+  }
+  window.scrollTo(0,0);
+  // キーボードを開かせないよう、入力欄ではなく見出しにフォーカスを移す
+  var heading=isStep?$(screen).querySelector('.q'):$('verdictVal');
+  if(heading)heading.focus({preventScroll:true});
+}
+
+document.querySelectorAll('.screen[data-step]').forEach(function(sec){
+  var n=Number(sec.dataset.step);
+  sec.querySelector('[data-primary]').addEventListener('click',function(){
+    if(validateStep(n))return refreshStep(n);
+    go(state.seenResult||n===STEP_COUNT?'result':'step'+(n+1));
+  });
+  var back=sec.querySelector('[data-back]');
+  if(back)back.addEventListener('click',function(){go('step'+(n-1));});
+});
+window.addEventListener('hashchange',function(){show(location.hash.slice(1));});
+
 /* ── 描画：結論 ── */
 function renderVerdict(r){
   var pos=r.net>=0,p=r.p;
@@ -386,15 +528,6 @@ function renderVerdict(r){
   $('verdictText').textContent=pos
     ?r.years+'年後、残っているローン '+man(r.remain)+' を投資から一括で返しても、手元に '+man(r.net)+' 残ります。'
     :r.years+'年後、投資の残高 '+man(r.value)+' では、残っているローン '+man(r.remain)+' を返しきれず、'+man(r.net)+' 足りません。';
-}
-
-function renderInvalid(msg){
-  $('verdict').className='verdict bad';
-  $('verdictLead').textContent='入力を確認してください';
-  $('verdictVal').textContent='—';
-  $('verdictText').textContent=msg;
-  $('diffNote').className='diff-note bad';
-  $('diffNote').textContent=msg;
 }
 
 /* ── 描画：損をしない条件 ── */
@@ -491,6 +624,24 @@ function renderChart(r){
   $('legendLoan').textContent=p.ly+'年ローンの残り';
 }
 
+/* ── 描画：入力した条件 ── */
+function renderSummary(r){
+  var p=r.p;
+  var rows=[
+    [1,'ローン',man(p.loan)+'・金利 年'+p.lr+'%'],
+    [2,'返済期間',p.sy+'年 と '+p.ly+'年（毎月 '+yen(r.diff)+' 浮く）'],
+    [3,'投資','利回り 年'+rateFor('base')+'%'+(p.extra>0?'・追加 毎月'+yen(p.extra):'')+'・'+(state.tax==='nisa'?'NISA':'特定口座')],
+    [4,'投資先',p.usd?'ドル建て（'+p.fxEntry+'円 → '+p.fxExit+'円）':'円建て']
+  ];
+  $('summary').innerHTML=rows.map(function(row){
+    return'<div class="sum-row"><div><div class="sum-k">'+row[1]+'</div><div class="sum-v">'+row[2]+'</div></div>'+
+      '<button class="link-btn" data-goto="step'+row[0]+'">変更</button></div>';
+  }).join('');
+}
+$('summary').addEventListener('click',function(e){
+  var b=e.target.closest('[data-goto]');if(b)go(b.dataset.goto);
+});
+
 /* ── 描画：数字の内訳 ── */
 function renderBreakdown(r){
   var p=r.p;
@@ -529,8 +680,7 @@ function renderHistory(r){
 
 /* ── 描画：為替の歴史 ── */
 function renderFxHistory(r){
-  var fold=$('fxHistFold');
-  fold.hidden=!r.p.usd;
+  $('fxHistFold').hidden=!r.p.usd;
   if(!r.p.usd)return;
   var be=findFxBreakeven(r.ir);
   $('fxHistLead').textContent=be===null?'どのレートでも損になる設定です。'
@@ -553,43 +703,33 @@ function item(rate,h,badges){
     '<div class="h-desc">'+h.event+'</div><div class="badges">'+badges+'</div></div></div>';
 }
 
-/* ── メイン ── */
+/* ── 結果画面の計算・描画 ── */
 function calc(){
   ['bear','base','bull'].forEach(function(t){$('rate-'+t).textContent=rateFor(t).toFixed(1)+'%';});
-  $('fxFields').hidden=state.fx!=='usd';
-
-  var p=inputs();
-  var resultCards=[$('condCard'),$('chartCard'),$('bdFold')];
-  if(p.loan<=0||p.ly<=p.sy){
-    renderInvalid(p.loan<=0?'借入額を入力してください。':'長い方の返済期間を、短い方より長くしてください。');
-    resultCards.forEach(function(el){el.hidden=true;});
-    return;
-  }
-  resultCards.forEach(function(el){el.hidden=false;});
+  $('rateSlider').value=rateFor('base');
+  $('sliderVal').textContent='年'+rateFor('base').toFixed(1)+'%';
 
   var r=sim(rateFor(state.tab));
-  $('diffNote').className='diff-note';
-  $('diffNote').textContent='毎月の返済の差額 '+yen(r.diff)+(p.extra>0?' ＋ 追加 '+yen(p.extra):'')+' を投資に回します（'+p.sy+'年間）';
-
   renderVerdict(r);
   renderConditions(findBreakeven(),r);
   renderChart(r);
+  renderSummary(r);
   renderBreakdown(r);
   renderHistory(r);
   renderFxHistory(r);
 }
 
-/* ── 切替ボタン ── */
+/* ── 入力・切替ボタン ── */
 function setSeg(segId,value){
   $(segId).querySelectorAll('button').forEach(function(b){b.classList.toggle('on',b.dataset.v===value);});
 }
 $('taxSeg').addEventListener('click',function(e){
   var b=e.target.closest('button');if(!b)return;
-  state.tax=b.dataset.v;setSeg('taxSeg',state.tax);calc();
+  state.tax=b.dataset.v;setSeg('taxSeg',state.tax);
 });
 $('fxSeg').addEventListener('click',function(e){
   var b=e.target.closest('button');if(!b)return;
-  state.fx=b.dataset.v;setSeg('fxSeg',state.fx);calc();
+  state.fx=b.dataset.v;setSeg('fxSeg',state.fx);refreshStep(4);
 });
 function setTab(t){
   state.tab=t;
@@ -599,27 +739,40 @@ document.querySelector('.tabs').addEventListener('click',function(e){
   var b=e.target.closest('.tab');if(!b)return;
   setTab(b.dataset.tab);calc();
 });
-document.querySelectorAll('input').forEach(function(el){el.addEventListener('input',calc);});
+// スライダーはステップ3の利回り入力欄と同じ値を持つ
+$('rateSlider').addEventListener('input',function(){
+  $('investmentRate').value=this.value;calc();
+});
+document.querySelectorAll('.screen[data-step] input').forEach(function(el){
+  el.addEventListener('input',function(){
+    var sec=el.closest('.screen');refreshStep(Number(sec.dataset.step));
+  });
+});
+$('restartBtn').addEventListener('click',function(){
+  state.seenResult=false;go('step1');
+});
 
 /* ── URL共有 ── */
 var URL_PARAMS={la:'loanAmount',lr:'loanRate',sy:'shortYears',ly:'longYears',ir:'investmentRate',em:'extraMonthly',fe:'fxEntry',fx:'fxExit'};
 
+// 設定値付きのURLなら true を返す
 function loadFromURL(){
-  var q=new URLSearchParams(location.search);
-  Object.keys(URL_PARAMS).forEach(function(k){if(q.has(k))$(URL_PARAMS[k]).value=q.get(k);});
+  var q=new URLSearchParams(location.search),found=false;
+  Object.keys(URL_PARAMS).forEach(function(k){if(q.has(k)){$(URL_PARAMS[k]).value=q.get(k);found=true;}});
   if(q.get('fm')==='jpy'||q.get('fm')==='usd'){state.fx=q.get('fm');setSeg('fxSeg',state.fx);}
   if(SC_LABEL[q.get('sc')])setTab(q.get('sc'));
   // 旧版の tx / txa（税率の数値）にも対応
   var tm=q.get('tm');
   if(!tm&&(q.has('tx')||q.has('txa')))tm=parseFloat(q.get('txa')||q.get('tx'))>0?'tokutei':'nisa';
   if(TAX[tm]!=null){state.tax=tm;setSeg('taxSeg',tm);}
+  return found;
 }
 
 function shareURL(){
   var q=new URLSearchParams();
   Object.keys(URL_PARAMS).forEach(function(k){q.set(k,$(URL_PARAMS[k]).value);});
   q.set('tm',state.tax);q.set('fm',state.fx);q.set('sc',state.tab);
-  return location.origin+location.pathname+'?'+q.toString();
+  return location.origin+location.pathname+'?'+q.toString()+'#result';
 }
 $('shareBtn').addEventListener('click',function(){
   var url=shareURL();
@@ -643,15 +796,21 @@ function toast(msg){
 }
 
 /* ── 画面幅・テーマ変更時にグラフを描き直す ── */
+function redrawIfResult(){if(state.screen==='result')calc();}
 var resizeTimer=null;
-window.addEventListener('resize',function(){clearTimeout(resizeTimer);resizeTimer=setTimeout(calc,120);});
+window.addEventListener('resize',function(){clearTimeout(resizeTimer);resizeTimer=setTimeout(redrawIfResult,120);});
 if(window.matchMedia){
   var mq=window.matchMedia('(prefers-color-scheme: dark)');
-  if(mq.addEventListener)mq.addEventListener('change',calc);
+  if(mq.addEventListener)mq.addEventListener('change',redrawIfResult);
 }
 
-loadFromURL();
-calc();
+/* ── 初期化：共有URLなら結果から、そうでなければステップ1から ── */
+var fromShare=loadFromURL();
+var initial=location.hash.slice(1);
+if(SCREENS.indexOf(initial)<0)initial=fromShare?'result':'step1';
+if(initial==='result')state.seenResult=true;
+history.replaceState(null,'','#'+initial);
+show(initial);
 })();
 </script>
 </body>
