@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>投資信託 積立疑似体験</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#f4f5f7;--surface:#ffffff;--surface2:#f1f3f5;--border:#e0e2e8;
+  --text:#111318;--muted:#6b7280;
+  --accent:#2563eb;--accent-bg:#eff6ff;--accent-text:#1d4ed8;--btn:#2563eb;
+  --good:#059669;--good-bg:#ecfdf5;--good-text:#065f46;
+  --bad:#dc2626;--bad-bg:#fef2f2;--bad-text:#991b1b;
+  --warn:#d97706;--warn-bg:#fffbeb;--warn-text:#92400e;
+  --s1:#257de0;--s2:#f47230;--line-muted:#9ca3af;
+  --shade-crash:rgba(220,38,38,.10);--shade-boom:rgba(5,150,105,.10);
+  --band-outer:rgba(37,125,224,.13);--band-inner:rgba(37,125,224,.26);
+  --radius:14px;--radius-sm:8px;
+}
+@media(prefers-color-scheme:dark){
+  :root{
+    --bg:#0f1117;--surface:#1a1d27;--surface2:#222535;--border:#2e3248;
+    --text:#e8eaf0;--muted:#8a91b0;
+    --accent:#4f8ef7;--accent-bg:#1e2d4a;--accent-text:#93c5fd;
+    --good:#34d399;--good-bg:#06372b;--good-text:#6ee7b7;
+    --bad:#f87171;--bad-bg:#3b0d0d;--bad-text:#fca5a5;
+    --warn:#fbbf24;--warn-bg:#3a1a04;--warn-text:#fde68a;
+    --s1:#338ced;--s2:#e76624;--line-muted:#6b7280;
+    --shade-crash:rgba(248,113,113,.13);--shade-boom:rgba(52,211,153,.11);
+    --band-outer:rgba(51,140,237,.16);--band-inner:rgba(51,140,237,.32);
+  }
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Noto Sans JP',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.6;padding-bottom:40px;-webkit-text-size-adjust:100%}
+[hidden]{display:none!important}
+.header{max-width:560px;margin:0 auto;padding:16px 16px 0}
+.header h1{font-size:15px;font-weight:800;line-height:1.35}
+.header p{font-size:12px;color:var(--muted)}
+.header a{color:var(--accent-text);font-size:12px}
+.page{max-width:560px;margin:0 auto;padding:0 16px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-top:12px}
+.card-title{font-size:13px;font-weight:700;color:var(--muted);margin-bottom:10px}
+.q{font-size:22px;font-weight:800;line-height:1.35;margin-top:20px;outline:none}
+.q-sub{font-size:13px;color:var(--muted);margin-top:4px}
+.err{color:var(--bad-text);background:var(--bad-bg);padding:10px 12px;border-radius:var(--radius-sm);font-size:13px;margin-top:10px}
+.nav{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+.btn{flex:1;padding:14px 10px;border-radius:12px;font:inherit;font-size:15px;font-weight:700;cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--text);min-width:120px}
+.btn-primary{flex:2;background:var(--btn);border-color:var(--btn);color:#fff}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-sm{padding:10px 8px;font-size:13px;border-radius:10px;min-width:0}
+.hint{margin-top:12px;padding:12px 14px;background:var(--accent-bg);color:var(--accent-text);border-radius:var(--radius-sm);font-size:13px;line-height:1.7}
+.warnbox{margin-top:12px;padding:10px 12px;background:var(--warn-bg);color:var(--warn-text);border-radius:var(--radius-sm);font-size:12px;line-height:1.7}
+
+/* 入力 */
+.field{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid var(--border)}
+.card>.field:first-child,.card>details>.field:first-of-type{border-top:none;padding-top:2px}
+.field label,.field .lbl{font-size:15px;font-weight:600;line-height:1.35}
+.field small{display:block;font-size:12px;font-weight:400;color:var(--muted)}
+.in{display:flex;align-items:center;gap:4px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 10px;flex-shrink:0}
+.in:focus-within{border-color:var(--accent)}
+.in input{width:64px;border:none;background:transparent;font:inherit;font-size:18px;text-align:right;color:var(--text);outline:none;font-variant-numeric:tabular-nums;-moz-appearance:textfield;appearance:textfield}
+.in input::-webkit-inner-spin-button,.in input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.in span{font-size:13px;color:var(--muted);white-space:nowrap}
+.in select{border:none;background:transparent;font:inherit;font-size:14px;color:var(--text);outline:none;max-width:220px}
+.field.col{flex-direction:column;align-items:stretch;gap:8px}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg button{flex:1;padding:10px 6px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface2);color:var(--muted);font:inherit;font-size:14px;font-weight:600;cursor:pointer;line-height:1.35;min-width:0}
+.seg button small{display:block;font-size:11px;font-weight:400}
+.seg button.on{background:var(--accent-bg);color:var(--accent-text);border-color:var(--accent)}
+.seg.grid{display:grid;grid-template-columns:1fr 1fr}
+.seg.grid3{display:grid;grid-template-columns:1fr 1fr 1fr}
+.sub-fields{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.check{display:flex;gap:10px;align-items:flex-start;font-size:14px;font-weight:600;cursor:pointer}
+.check input{width:20px;height:20px;margin-top:2px;accent-color:var(--accent);flex-shrink:0}
+.check small{display:block;font-size:12px;font-weight:400;color:var(--muted)}
+summary{cursor:pointer;font-size:14px;font-weight:700;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:8px}
+summary::-webkit-details-marker{display:none}
+summary::after{content:'＋';color:var(--muted);font-weight:400}
+details[open]>summary::after{content:'−'}
+details[open]>summary{margin-bottom:8px}
+
+/* 体験画面 */
+.clock{display:flex;justify-content:space-between;align-items:baseline;margin-top:16px;gap:8px}
+.clock-t{font-size:20px;font-weight:800;font-variant-numeric:tabular-nums}
+.clock-sub{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.timebar{height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-top:6px}
+.timebar div{height:100%;background:var(--accent);width:0}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;min-width:0}
+.stat.big{grid-column:1/-1}
+.stat-k{font-size:11px;color:var(--muted);font-weight:700}
+.stat-v{font-size:18px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.3;overflow-wrap:anywhere}
+.stat.big .stat-v{font-size:32px;letter-spacing:-.5px}
+.stat-s{font-size:12px;font-weight:700;font-variant-numeric:tabular-nums}
+.up{color:var(--good)}.down{color:var(--bad)}
+.news{margin-top:12px;padding:12px 14px;border-radius:var(--radius-sm);font-size:13px;line-height:1.6;background:var(--surface2);border-left:4px solid var(--border);min-height:48px}
+.news.crash{background:var(--bad-bg);color:var(--bad-text);border-color:var(--bad)}
+.news.boom{background:var(--good-bg);color:var(--good-text);border-color:var(--good)}
+.news.info{background:var(--accent-bg);color:var(--accent-text);border-color:var(--accent)}
+.news b{display:block;font-size:14px}
+.ctrl{display:flex;gap:6px;margin-top:12px}
+.ctrl .seg{flex:1}
+.ctrl .seg button{padding:8px 4px;font-size:13px}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
+.mode-pill{display:inline-block;font-size:11px;padding:1px 8px;border-radius:10px;font-weight:700;margin-left:6px;vertical-align:2px}
+.mode-pill.normal{background:var(--good-bg);color:var(--good-text)}
+.mode-pill.paused{background:var(--warn-bg);color:var(--warn-text)}
+.mode-pill.out{background:var(--bad-bg);color:var(--bad-text)}
+
+/* グラフ */
+.chart-wrap{position:relative}
+.chart{display:block;width:100%;height:220px;touch-action:pan-y}
+.chart.small{height:120px}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:8px;font-size:12px;color:var(--muted)}
+.legend span::before{content:'';display:inline-block;width:14px;height:3px;border-radius:2px;margin-right:5px;vertical-align:middle;background:var(--c)}
+.legend span.dash::before{background:repeating-linear-gradient(90deg,var(--c) 0 4px,transparent 4px 7px)}
+.legend span.box::before{height:10px;width:12px;border-radius:2px}
+.tip{position:absolute;pointer-events:none;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:12px;line-height:1.55;box-shadow:0 4px 14px rgba(0,0,0,.15);white-space:nowrap;z-index:2;font-variant-numeric:tabular-nums}
+.tip b{font-weight:700}
+.tip i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;font-style:normal;background:var(--c)}
+
+/* 結果 */
+.verdict{margin-top:16px;border-radius:var(--radius);padding:20px 18px 16px;border:2px solid var(--border);background:var(--surface)}
+.verdict.good{background:var(--good-bg);border-color:var(--good)}
+.verdict.bad{background:var(--bad-bg);border-color:var(--bad)}
+.verdict.even{background:var(--warn-bg);border-color:var(--warn)}
+.verdict-lead{font-size:13px;font-weight:600;color:var(--muted)}
+.verdict-val{font-size:38px;font-weight:800;line-height:1.15;margin:4px 0 8px;font-variant-numeric:tabular-nums;letter-spacing:-.5px;outline:none}
+.verdict-text{font-size:13px;line-height:1.7}
+.verdict.good .verdict-lead,.verdict.good .verdict-text{color:var(--good-text)}
+.verdict.bad .verdict-lead,.verdict.bad .verdict-text{color:var(--bad-text)}
+.verdict.even .verdict-lead,.verdict.even .verdict-text{color:var(--warn-text)}
+.bd{width:100%;border-collapse:collapse;font-size:13px}
+.bd td,.bd th{padding:7px 0;border-top:1px solid var(--border);vertical-align:top;text-align:left}
+.bd th{font-size:11px;color:var(--muted);font-weight:700;border-top:none}
+.bd td+td,.bd th+th{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:600;padding-left:10px}
+.bd td small{display:block;font-size:11px;font-weight:500;color:var(--muted)}
+.good-t{color:var(--good)}.bad-t{color:var(--bad)}
+.h-item{display:flex;gap:12px;padding:12px 0;border-top:1px solid var(--border)}
+.h-item:first-child{border-top:none;padding-top:0}
+.h-rate{flex-shrink:0;width:64px;font-weight:800;font-size:14px;font-variant-numeric:tabular-nums}
+.h-body{flex:1;min-width:0}
+.h-period{font-size:11px;color:var(--muted);font-weight:700}
+.h-label{font-size:13px;font-weight:700;margin:2px 0}
+.h-desc{font-size:12px;color:var(--muted);line-height:1.7}
+.badge{display:inline-block;font-size:11px;padding:1px 8px;border-radius:10px;font-weight:700;margin:4px 4px 0 0}
+.badge.good{background:var(--good-bg);color:var(--good-text)}
+.badge.warn{background:var(--warn-bg);color:var(--warn-text)}
+.badge.bad{background:var(--bad-bg);color:var(--bad-text)}
+.badge.accent{background:var(--accent-bg);color:var(--accent-text)}
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.kpi{background:var(--surface2);border-radius:var(--radius-sm);padding:10px 12px}
+.kpi-k{font-size:11px;color:var(--muted);font-weight:700}
+.kpi-v{font-size:17px;font-weight:800;font-variant-numeric:tabular-nums}
+.kpi-s{font-size:11px;color:var(--muted)}
+.note{font-size:11px;color:var(--muted);margin-top:16px;line-height:1.8}
+.lead{font-size:13px;line-height:1.7}
+
+/* 判断モーダル */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:flex-end;justify-content:center;z-index:20;padding:16px}
+.modal{background:var(--surface);border-radius:18px;max-width:528px;width:100%;padding:20px 18px 16px;max-height:calc(100vh - 32px);overflow:auto;animation:pop .2s ease}
+@keyframes pop{from{transform:translateY(30px);opacity:0}to{transform:none;opacity:1}}
+.modal h3{font-size:19px;font-weight:800;line-height:1.4;outline:none}
+.modal .m-news{font-size:12px;color:var(--muted);margin-top:6px;font-style:italic}
+.modal .m-body{font-size:14px;margin-top:10px;line-height:1.7}
+.modal .m-body b{font-variant-numeric:tabular-nums}
+.choices{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.choices .btn{text-align:left;padding:12px 14px;font-size:15px}
+.choices .btn small{display:block;font-size:12px;font-weight:400;color:var(--muted)}
+.choices .btn-primary small{color:rgba(255,255,255,.8)}
+.modal .check{margin-top:12px;font-size:13px}
+@media(min-width:600px){.overlay{align-items:center}}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <h1>投資信託 積立シミュレーター（疑似体験版）</h1>
+  <p>過去の暴落・バブルの統計をもとに、何十年分の値動きを早送りで体験できます</p>
+</header>
+
+<main class="page">
+
+<!-- ═════ 設定 ═════ -->
+<section id="setup">
+  <h2 class="q" tabindex="-1">どんな積立をしますか？</h2>
+  <p class="q-sub">金額と期間、投資先を選んでください。</p>
+  <div class="card">
+    <div class="field"><label for="monthly">毎月の積立額</label><div class="in"><input id="monthly" type="number" inputmode="decimal" min="0" step="0.1" value="3"><span>万円</span></div></div>
+    <div class="field"><label for="lump">最初にまとめて投資<small>なければ 0</small></label><div class="in"><input id="lump" type="number" inputmode="decimal" min="0" value="0"><span>万円</span></div></div>
+    <div class="field"><label for="years">積立期間</label><div class="in"><input id="years" type="number" inputmode="numeric" min="1" max="50" value="30"><span>年</span></div></div>
+    <div class="field col"><span class="lbl">投資先</span>
+      <div class="seg grid" id="assetSeg"></div>
+    </div>
+    <div class="field col"><span class="lbl">口座</span>
+      <div class="seg" id="taxSeg">
+        <button data-v="nisa" class="on">新NISA<small>利益に税金なし</small></button>
+        <button data-v="tokutei">特定口座<small>利益に 20.315%</small></button>
+      </div>
+    </div>
+  </div>
+
+  <h2 class="q" style="font-size:18px">どんな相場を体験しますか？</h2>
+  <div class="card">
+    <div class="field col" style="border-top:none;padding-top:2px">
+      <div class="seg" id="modeSeg">
+        <button data-v="random" class="on">おまかせ<small>過去の統計どおりの確率で<br>暴落・高騰が起きる</small></button>
+        <button data-v="forced">出来事を指定<small>好きな時期に<br>歴史的な暴落を起こす</small></button>
+      </div>
+    </div>
+    <div class="field col" id="freqField"><span class="lbl">暴落・バブルの起きやすさ</span>
+      <div class="seg grid3" id="freqSeg">
+        <button data-v="0.5">少なめ<small>統計の半分</small></button>
+        <button data-v="1" class="on">史実並み<small>約6年に1度</small></button>
+        <button data-v="2">多め<small>統計の2倍</small></button>
+      </div>
+    </div>
+    <div class="field col" id="forcedField" hidden><span class="lbl">起きる出来事と時期</span>
+      <div class="in" style="width:100%"><select id="forcedEv" style="max-width:none;width:100%"></select></div>
+      <div class="sub-fields"><div class="in"><input id="forcedYear" type="number" inputmode="numeric" min="0" value="20" aria-label="何年目に起きるか"><span>年目に起きる</span></div></div>
+      <small style="font-size:12px;color:var(--muted)">それ以外の期間は、平均的な値動き（上下のブレあり）になります。「受け取り直前の暴落」を試すなら、期間の終わり近くを指定してみてください。</small>
+    </div>
+    <div class="field">
+      <label class="check"><input type="checkbox" id="decide" checked><span>暴落・急騰のときに判断する<small>売る・積立を止めるなどを選べます。オフにすると淡々と積み立てます</small></span></label>
+    </div>
+  </div>
+
+  <div class="card">
+    <details id="advanced">
+      <summary>くわしい設定（リターン・リスク・手数料）</summary>
+      <div class="field"><label for="ret">期待リターン<small>長期の年率（複利）</small></label><div class="in"><input id="ret" type="number" inputmode="decimal" step="0.1" value="7"><span>%</span></div></div>
+      <div class="field"><label for="vol">リスク<small>1年の値動きのブレ（標準偏差）</small></label><div class="in"><input id="vol" type="number" inputmode="decimal" min="0" step="0.5" value="18"><span>%</span></div></div>
+      <div class="field"><label for="fee">信託報酬<small>年率・毎日差し引かれるコスト</small></label><div class="in"><input id="fee" type="number" inputmode="decimal" min="0" step="0.01" value="0.06"><span>%</span></div></div>
+      <p class="note" style="margin-top:4px">投資先を選ぶと、過去の実績から丸めた値が自動で入ります。暴落の深さは投資先ごとに調整されます（例：バランス型は株式の約6割の下落）。</p>
+    </details>
+  </div>
+
+  <div class="hint" id="setupHint"></div>
+  <div class="warnbox" id="nisaWarn" hidden></div>
+  <p class="err" id="setupErr" hidden></p>
+  <div class="nav">
+    <button class="btn" id="btnInstant">体験せず結果だけ見る</button>
+    <button class="btn btn-primary" id="btnStart">疑似体験をはじめる ▶</button>
+  </div>
+
+  <div class="card">
+    <details>
+      <summary>シナリオの根拠（過去の暴落・高騰の統計）</summary>
+      <p class="lead">米国株（S&amp;P500・配当込み）と日本株の過去約100年の大きな下落・上昇を、型ごとに「深さ」「下げ続けた期間」「高値回復までの期間」「起きる頻度」に整理し、乱数で発生させています。数値はいずれも概算です。</p>
+      <div id="evTable" style="margin-top:10px"></div>
+    </details>
+  </div>
+  <p class="note">※ このシミュレーターは過去の統計をもとにした架空の値動きで、将来の運用成果を保証するものではありません。為替の変動は「リスク」に含めて扱っています。特定の商品の購入をすすめるものではありません。</p>
+  <p class="note"><a href="index.html" style="color:var(--accent-text)">住宅ローン差額投資シミュレーターはこちら</a></p>
+</section>
+
+<!-- ═════ 体験 ═════ -->
+<section id="play" hidden>
+  <div class="clock">
+    <div class="clock-t" id="pClock">0年0ヶ月目</div>
+    <div class="clock-sub" id="pClockSub"></div>
+  </div>
+  <div class="timebar"><div id="pTimebar"></div></div>
+
+  <div class="stats">
+    <div class="stat big"><div class="stat-k">評価額<span class="mode-pill normal" id="pMode">積立中</span></div><div class="stat-v" id="pVal">—</div><div class="stat-s" id="pGain"></div></div>
+    <div class="stat"><div class="stat-k">投資した元本</div><div class="stat-v" id="pInv">—</div><div class="stat-s" id="pCash" style="color:var(--muted)"></div></div>
+    <div class="stat"><div class="stat-k">基準価額<small style="font-weight:400">（1万円スタート）</small></div><div class="stat-v" id="pIdx">—</div><div class="stat-s" id="pDD"></div></div>
+  </div>
+
+  <div class="news" id="pNews" aria-live="polite"><b>スタート</b>積立をはじめました。毎月コツコツ買っていきます。</div>
+
+  <div class="card">
+    <div class="chart-wrap"><canvas id="pChart" class="chart"></canvas></div>
+    <div class="legend"><span style="--c:var(--s1)">評価額</span><span class="dash" style="--c:var(--line-muted)">元本</span><span class="box" style="--c:var(--shade-crash)">暴落局面</span><span class="box" style="--c:var(--shade-boom)">上昇相場</span></div>
+  </div>
+
+  <div class="ctrl">
+    <button class="btn btn-sm" id="btnPause" style="flex:0 0 96px">⏸ 一時停止</button>
+    <div class="seg" id="speedSeg">
+      <button data-v="5">ゆっくり</button>
+      <button data-v="15" class="on">ふつう</button>
+      <button data-v="60">速い</button>
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn btn-sm" id="btnContrib">積立を止める</button>
+    <button class="btn btn-sm" id="btnSell">全部売る</button>
+    <button class="btn btn-sm" id="btnCashIn" hidden>現金を投入</button>
+    <button class="btn btn-sm" id="btnSkip">最後まで飛ばす ⏭</button>
+  </div>
+</section>
+
+<!-- ═════ 結果 ═════ -->
+<section id="result" hidden>
+  <div class="verdict" id="verdict">
+    <div class="verdict-lead" id="vLead"></div>
+    <div class="verdict-val" id="vVal" tabindex="-1"></div>
+    <div class="verdict-text" id="vText"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">この期間の値動き</div>
+    <div class="chart-wrap"><canvas id="rChart" class="chart"></canvas></div>
+    <div class="legend" id="rLegend"></div>
+    <div class="card-title" style="margin-top:16px">基準価額（1万円スタート・信託報酬控除後）</div>
+    <div class="chart-wrap"><canvas id="rIdxChart" class="chart small"></canvas></div>
+  </div>
+
+  <div class="card"><div class="card-title">結果のくわしい内訳</div><table class="bd" id="rTable"></table></div>
+
+  <div class="card"><div class="card-title">体験した出来事</div><div id="rEvents"></div></div>
+
+  <div class="card" id="rActionsCard"><div class="card-title">あなたの判断</div><div id="rActions"></div></div>
+
+  <div class="card">
+    <div class="card-title" id="mcTitle">同じ条件で 1,000 通りの未来を試すと</div>
+    <div id="mcBody"><p class="lead">計算中…</p></div>
+  </div>
+
+  <div class="nav">
+    <button class="btn" id="btnReplay">同じ未来でやり直す</button>
+    <button class="btn btn-primary" id="btnAgain">別の未来を体験する</button>
+  </div>
+  <div class="nav" style="margin-top:8px"><button class="btn" id="btnBack">条件を変える</button></div>
+  <p class="note">※ 過去の統計をもとにした架空の値動きです。実際の相場が同じように動くとは限りません。税金は売却時・最終時点の利益に一律で計算し、NISAの非課税枠の上限は考慮していません。</p>
+</section>
+</main>
+
+<!-- 判断モーダル -->
+<div class="overlay" id="overlay" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+    <h3 id="mTitle" tabindex="-1"></h3>
+    <div class="m-news" id="mNews"></div>
+    <div class="m-body" id="mBody"></div>
+    <div class="choices" id="mChoices"></div>
+    <label class="check"><input type="checkbox" id="mNoMore"><span>このあとは聞かずに最後まで進める</span></label>
+  </div>
+</div>
+
+<script>
+'use strict';
+function $(id){return document.getElementById(id);}
+function gv(id){var v=Number($(id).value);return isFinite(v)?v:0;}
+
+/* ── 表示用 ── */
+function man(v){
+  var neg=v<0,a=Math.abs(v)/10000,s;
+  if(a>=10000){s=(Math.round(a/1000)/10).toLocaleString('ja-JP')+'億円';}
+  else if(a>=100){s=Math.round(a).toLocaleString('ja-JP')+'万円';}
+  else if(a>=1){s=(Math.round(a*10)/10).toLocaleString('ja-JP')+'万円';}
+  else s=Math.round(a*10000).toLocaleString('ja-JP')+'円';
+  return (neg?'−':'')+s;
+}
+function sman(v){return (v>=0?'+':'')+man(v);}
+function pc(v,d){d=d===undefined?1:d;var f=Math.pow(10,d);return (v>=0?'+':'−')+(Math.round(Math.abs(v)*100*f)/f).toFixed(d)+'%';}
+function ym(t){var y=Math.floor(t/12),m=t%12;return y+'年'+(m?m+'ヶ月':'');}
+function axisMan(v){return v>=1e8?(Math.round(v/1e7)/10)+'億':Math.round(v/1e4).toLocaleString('ja-JP')+'万';}
+
+/* ── 投資先（過去の実績を丸めた円ベースの目安） ── */
+var ASSETS={
+  world:{name:'全世界株式',sub:'オール・カントリー等',ret:7,vol:18,fee:0.06,beta:1},
+  us:{name:'米国株式',sub:'S&P500等',ret:9,vol:19,fee:0.09,beta:1},
+  jp:{name:'日本株式',sub:'TOPIX等',ret:5,vol:18,fee:0.14,beta:0.9},
+  bal:{name:'バランス型',sub:'株6：債券4',ret:5,vol:11,fee:0.15,beta:0.6},
+  bond:{name:'先進国債券',sub:'為替ヘッジなし',ret:3,vol:8,fee:0.15,beta:0.25},
+  custom:{name:'自分で設定',sub:'くわしい設定で入力',ret:null,vol:null,fee:null,beta:1}
+};
+
+/* ── 過去の暴落・高騰（S&P500配当込み・日経平均などの概算） ──
+   dd:高値からの下落率 down:下げ続けた月数 up:底から高値回復までの月数
+   gain:上昇率 months:上昇期間 p:1年あたりの発生確率 pjp:日本株での確率 */
+var EVENTS=[
+  {id:'covid',type:'crash',name:'コロナショック型',hist:'2020年 新型コロナウイルス',dd:.34,down:1,up:5,p:.03,
+   desc:'わずか1ヶ月で約34%下落。各国の大規模な金融緩和と財政出動で、約5ヶ月で元の高値に戻った。'},
+  {id:'bm',type:'crash',name:'ブラックマンデー型',hist:'1987年 ブラックマンデー',dd:.33,down:3,up:20,p:.025,
+   desc:'ダウ平均が1日で22.6%下落するなど、約3ヶ月で約33%下落。約2年で高値を回復。'},
+  {id:'inf',type:'crash',name:'インフレ・利上げ型',hist:'2022年 米国の急速な利上げ',dd:.25,down:9,up:14,p:.05,
+   desc:'物価高を抑えるための利上げで、株と債券がそろって下落。約2年で高値を回復。'},
+  {id:'oil',type:'crash',name:'オイルショック型',hist:'1973〜74年 第一次オイルショック',dd:.48,down:21,up:40,p:.015,
+   desc:'原油価格の高騰と高インフレで約2年下げ続け、約48%下落。回復にも3年以上かかった。'},
+  {id:'dotcom',type:'crash',name:'ITバブル崩壊型',hist:'2000〜02年 ITバブル崩壊',dd:.49,down:31,up:50,p:.015,
+   desc:'ネット関連株の熱狂がはじけ、2年半にわたり約49%下落（ナスダックは約78%）。高値回復まで約7年。'},
+  {id:'gfc',type:'crash',name:'リーマンショック型',hist:'2007〜09年 世界金融危機',dd:.55,down:17,up:37,p:.015,
+   desc:'サブプライムローン問題からリーマン・ブラザーズが破綻。約55%下落し、高値回復まで約4年半。'},
+  {id:'gd',type:'crash',name:'大恐慌型',hist:'1929〜32年 世界恐慌',dd:.84,down:33,up:90,p:.004,
+   desc:'約3年で8割以上下落した、記録上最悪の暴落。配当込みでも回復に10年近くかかった。'},
+  {id:'jpcrash',type:'crash',name:'日本バブル崩壊型',hist:'1990〜2003年 日経平均',dd:.75,down:160,up:200,p:.002,pjp:.008,
+   desc:'日経平均は1989年末の約3万9千円から2003年に約7,600円まで約8割下落。高値更新は34年後の2024年。'},
+  {id:'itboom',type:'boom',name:'ITバブル型の上昇',hist:'1995〜99年 米国株',gain:2.5,months:60,p:.012,
+   desc:'インターネットへの期待で5年間ほぼ毎年20%超の上昇。配当込みで約3.5倍に。その後に崩壊が待っていた。'},
+  {id:'easing',type:'boom',name:'金融緩和相場型',hist:'2012〜15年 アベノミクス相場',gain:1.4,months:30,p:.02,
+   desc:'大胆な金融緩和で日経平均は約2年半で約2.4倍に。2020〜21年のコロナ後の相場も似た急上昇だった。'},
+  {id:'jpbubble',type:'boom',name:'日本バブル型の上昇',hist:'1985〜89年 日経平均',gain:2,months:58,p:.003,pjp:.008,
+   desc:'低金利と土地神話で日経平均は約5年で約3倍に。直後に「バブル崩壊」が始まった。'}
+];
+var EVMAP={};EVENTS.forEach(function(e){EVMAP[e.id]=e;});
+var HEAT_MONTHS=36,HEAT_MULT=3;// バブルのあとの3年間は暴落が起きやすい
+var TAX_RATE=0.20315;
+
+/* ── 乱数（シード付き：同じ未来を再現できる） ── */
+function rng32(seed){var a=seed>>>0;return function(){a=(a+0x6D2B79F5)>>>0;var t=a;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return((t^(t>>>14))>>>0)/4294967296;};}
+function gauss(r){var u=0,v=0;while(u===0)u=r();v=r();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+
+/* ── 値動きの生成 ── */
+function evProb(e,asset){return (asset==='jp'&&e.pjp)?e.pjp:e.p;}
+
+// n か月で合計 total（対数）動くように、ブレを足しつつ合計を合わせる
+function segment(r,from,n,total,sd,rand,out,max){
+  var z=[],mean=0,i;
+  for(i=0;i<n;i++){z.push(gauss(rand)*sd);mean+=z[i];}
+  mean/=n;
+  for(i=0;i<n;i++){
+    var t=from+i;if(t>=max)break;
+    var v=total/n+(n>1?z[i]-mean:0);
+    r[t]+=v;out.sum+=v;
+  }
+}
+
+function genPath(cfg,seed){
+  var rand=rng32(seed),M=cfg.months;
+  var r=new Float64Array(M),phase=new Int8Array(M),events=[];
+  var t=0,heat=0,evSum={sum:0};
+  var sdEv=cfg.sig*1.3;
+  while(t<M){
+    var ev=null;
+    if(cfg.forced){
+      if(t===cfg.forced.month)ev=EVMAP[cfg.forced.id];
+    }else if(cfg.freq>0){
+      for(var k=0;k<EVENTS.length&&!ev;k++){
+        var e=EVENTS[k],p=evProb(e,cfg.asset)*cfg.freq/12;
+        if(e.type==='crash'&&heat>0)p*=HEAT_MULT;
+        if(rand()<p)ev=e;
+      }
+    }
+    if(ev){
+      var rec={ev:ev,start:t};
+      if(ev.type==='crash'){
+        var depth=Math.min(.95,ev.dd*cfg.beta),L=Math.log(1-depth);
+        segment(r,t,ev.down,L,sdEv,rand,evSum,M);
+        segment(r,t+ev.down,ev.up,-L,cfg.sig,rand,evSum,M);
+        rec.depth=depth;rec.bottom=t+ev.down;rec.end=t+ev.down+ev.up;
+        for(var a=t;a<Math.min(M,rec.end);a++)phase[a]=a<rec.bottom?1:2;
+        heat=0;
+      }else{
+        var G=Math.log(1+ev.gain)*cfg.beta;
+        segment(r,t,ev.months,G,cfg.sig,rand,evSum,M);
+        rec.gainScaled=Math.exp(G)-1;rec.end=t+ev.months;rec.bottom=rec.end;
+        for(var b=t;b<Math.min(M,rec.end);b++)phase[b]=3;
+        heat=HEAT_MONTHS;
+      }
+      events.push(rec);
+      t=rec.end;
+      continue;
+    }
+    r[t]=cfg.mu+cfg.sig*gauss(rand);
+    if(heat>0)heat--;
+    t++;
+  }
+  var fee=cfg.fee/12;
+  for(var j=0;j<M;j++)r[j]-=fee;
+  return {r:r,phase:phase,events:events,evSum:evSum.sum};
+}
+
+// 暴落・高騰を含めた長期の平均が「期待リターン」になるよう、ふだんの月の伸びを調整
+var calCache={};
+function calibrate(asset,ret,vol,beta,freq){
+  var key=[asset,ret,vol,beta,freq].join('|');
+  if(calCache[key]!==undefined)return calCache[key];
+  var target=Math.log(1+ret/100)/12,sig=vol/100/Math.sqrt(12)*0.85,N=400,M=360,es=0,nm=0;
+  for(var i=0;i<N;i++){
+    var p=genPath({months:M,mu:0,sig:sig,fee:0,beta:beta,freq:freq,asset:asset,forced:null},1000+i);
+    es+=p.evSum;
+    for(var t=0;t<M;t++)if(p.phase[t]===0)nm++;
+  }
+  var mu=(target*M-es/N)/(nm/N);
+  calCache[key]=mu;return mu;
+}
+
+/* ── 状態 ── */
+var S={asset:'world',tax:'nisa',mode:'random',freq:1};
+var cfg=null,path=null,seed=0,P=null,B=null;
+
+function readSettings(){
+  var a=ASSETS[S.asset],years=Math.round(gv('years'));
+  var o={
+    monthly:gv('monthly')*10000,lump:gv('lump')*10000,years:years,months:years*12,
+    ret:gv('ret'),vol:gv('vol'),fee:gv('fee')/100,beta:a.beta,asset:S.asset,
+    freq:S.freq,tax:S.tax==='tokutei'?TAX_RATE:0,decide:$('decide').checked,forced:null
+  };
+  if(S.mode==='forced'){
+    var fy=Math.max(0,Math.min(years-1,Math.round(gv('forcedYear'))));
+    o.forced={id:$('forcedEv').value,month:fy*12};
+    o.mu=Math.log(1+o.ret/100)/12;o.sig=o.vol/100/Math.sqrt(12);
+  }else{
+    o.sig=o.vol/100/Math.sqrt(12)*(o.freq>0?0.85:1);
+    o.mu=o.freq>0?calibrate(o.asset,o.ret,o.vol,o.beta,o.freq):Math.log(1+o.ret/100)/12;
+  }
+  return o;
+}
+
+function validate(){
+  var e='';
+  if(gv('monthly')<=0&&gv('lump')<=0)e='積立額か、最初の投資額を入れてください。';
+  else if(gv('monthly')<0||gv('lump')<0)e='金額はマイナスにできません。';
+  else if(gv('years')<1||gv('years')>50)e='積立期間は1〜50年で入れてください。';
+  else if(gv('vol')<0||gv('vol')>60)e='リスクは0〜60%で入れてください。';
+  else if(gv('ret')<-10||gv('ret')>20)e='期待リターンは−10〜20%で入れてください。';
+  $('setupErr').textContent=e;$('setupErr').hidden=!e;
+  return !e;
+}
+
+/* ── ポートフォリオ ── */
+function newPort(c){
+  return {hold:c.lump,basis:c.lump,cash:0,invested:c.lump,taxPaid:0,mode:'normal'};
+}
+function portVal(p){return p.hold+p.cash;}
+function stepPort(p,c,r){
+  var m=c.monthly;p.invested+=m;
+  if(p.mode==='normal'){p.hold+=m;p.basis+=m;}else p.cash+=m;
+  p.hold*=Math.exp(r);
+}
+function finalAfterTax(p,c){return p.cash+p.hold-Math.max(0,p.hold-p.basis)*c.tax;}
+
+// 積立の実質利回り（年率）
+function irr(c,finalV,months){
+  function fv(i){var s=c.lump*Math.pow(1+i,months);for(var k=0;k<months;k++)s+=c.monthly*Math.pow(1+i,months-k);return s;}
+  var lo=-0.2,hi=0.2;
+  if(fv(lo)>finalV||fv(hi)<finalV)return NaN;
+  for(var n=0;n<80;n++){var mid=(lo+hi)/2;if(fv(mid)<finalV)lo=mid;else hi=mid;}
+  return Math.pow(1+(lo+hi)/2,12)-1;
+}
+
+/* ── 体験の進行 ── */
+var DD_LEVELS=[.2,.35,.5],GAIN_LEVELS=[1,2,4];
+var HEADLINES={
+  .2:['「弱気相場入り」とニュースが報じています','SNSでは「もう投資はやめた」という声が増えています','経済番組で「景気後退入りか」と議論されています'],
+  .35:['「歴史的な暴落」と大きく報じられています','「まだ下がる」と予想する専門家が目立ちます','周りで「全部売った」という人が出てきました'],
+  .5:['「資産が半分に」という見出しが並んでいます','「株式投資はもう終わった」という特集が組まれています','証券会社の窓口に解約の相談が殺到しています']
+};
+function pick(arr){return arr[Math.floor(Math.random()*arr.length)];}
+
+function startRun(newSeed,instant){
+  cfg=readSettings();
+  if(newSeed)seed=Math.floor(Math.random()*1e9);
+  path=genPath(cfg,seed);
+  var M=cfg.months;
+  P=newPort(cfg);B=newPort(cfg);
+  P.t=0;P.idx=10000;P.idxPeak=10000;P.valPeak=portVal(P);P.ddFlags={};P.gainFlags={};
+  P.ask=cfg.decide&&!instant;P.actions=[];P.news=[];P.running=false;P.acc=0;
+  P.val=new Float64Array(M+1);P.inv=new Float64Array(M+1);P.base=new Float64Array(M+1);P.idxA=new Float64Array(M+1);P.maxDD=0;P.maxLoss=0;
+  P.val[0]=portVal(P);P.inv[0]=P.invested;P.base[0]=portVal(B);P.idxA[0]=P.idx;
+  if(instant){while(P.t<M)stepMonth();finish();return;}
+  show('play');
+  setNews('info','スタート','積立をはじめました。毎月 '+man(cfg.monthly)+' ずつ買っていきます。'+(cfg.decide?'大きく動いたときは、どうするか聞きます。':''));
+  updateActions();renderPlay();
+  resume();
+}
+
+function stepMonth(){
+  var t=P.t,r=path.r[t],M=cfg.months;
+  // 出来事の始まり（中身はまだ分からない）
+  path.events.forEach(function(e){
+    if(e.start===t){
+      if(e.ev.type==='crash')setNews('crash','相場が下がりはじめました','どこまで下がるかは、まだ誰にも分かりません。');
+      else setNews('boom','相場が勢いよく上がりはじめました','「乗り遅れるな」という空気が広がっています。');
+    }
+  });
+  stepPort(P,cfg,r);stepPort(B,cfg,r);
+  P.idx*=Math.exp(r);P.t=t+1;
+  var v=portVal(P);
+  P.val[t+1]=v;P.inv[t+1]=P.invested;P.base[t+1]=portVal(B);P.idxA[t+1]=P.idx;
+  if(P.idx>=P.idxPeak){P.idxPeak=P.idx;P.ddFlags={};}
+  if(v>P.valPeak)P.valPeak=v;
+  var dd=1-P.idx/P.idxPeak;
+  if(dd>P.maxDD)P.maxDD=dd;
+  if(P.valPeak-v>P.maxLoss)P.maxLoss=P.valPeak-v;
+  // 出来事の正体が分かる（底・ピーク）
+  path.events.forEach(function(e){
+    if(e.bottom===t+1&&e.ev.type==='crash')setNews('crash','底を打ちました（あとになって分かること）','今回は「'+e.ev.name+'」でした。史実では '+e.ev.hist+' に近い動きです。');
+    if(e.end===t+1&&e.ev.type==='crash')setNews('good','高値を回復しました','下落が始まってから '+ym(e.end-e.start)+' かかりました。');
+    if(e.end===t+1&&e.ev.type==='boom')setNews('boom','上昇相場が一段落','今回は「'+e.ev.name+'」でした（史実：'+e.ev.hist+'）。このあとは要注意です。');
+  });
+  // 判断ポイント
+  if(P.ask&&P.t<M){
+    for(var i=DD_LEVELS.length-1;i>=0;i--){
+      var lv=DD_LEVELS[i];
+      if(dd>=lv&&!P.ddFlags[lv]){DD_LEVELS.forEach(function(x){if(x<=lv)P.ddFlags[x]=1;});P.pending={kind:'dd',level:lv,dd:dd};break;}
+    }
+    var g=P.invested>0?v/P.invested-1:0;
+    if(!P.pending&&P.mode!=='out')for(var j=GAIN_LEVELS.length-1;j>=0;j--){
+      var gl=GAIN_LEVELS[j];
+      if(g>=gl&&!P.gainFlags[gl]){GAIN_LEVELS.forEach(function(x){if(x<=gl)P.gainFlags[x]=1;});P.pending={kind:'gain',level:gl,g:g};break;}
+    }
+  }
+}
+
+var raf=0,last=0,speed=15;
+function loop(ts){
+  if(!P||!P.running)return;
+  var dt=last?Math.min(100,ts-last):16;last=ts;
+  P.acc+=dt/1000*speed;
+  while(P.acc>=1&&P.t<cfg.months){
+    P.acc-=1;stepMonth();
+    if(P.pending){pause();renderPlay();openDecision();return;}
+  }
+  renderPlay();
+  if(P.t>=cfg.months){P.running=false;setTimeout(finish,500);return;}
+  raf=requestAnimationFrame(loop);
+}
+function resume(){if(!P||P.t>=cfg.months)return;P.running=true;last=0;$('btnPause').textContent='⏸ 一時停止';raf=requestAnimationFrame(loop);}
+function pause(){if(!P)return;P.running=false;cancelAnimationFrame(raf);$('btnPause').textContent='▶ 再開';}
+
+var newsKind={crash:'crash',boom:'boom',info:'info',good:'boom'};
+function setNews(kind,title,body){
+  var el=$('pNews');el.className='news '+(newsKind[kind]||'');
+  el.innerHTML='<b>'+esc(title)+'</b>'+esc(body);
+  if(P)P.news.push({t:P.t,kind:kind,title:title});
+}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+
+function renderPlay(){
+  var t=P.t,M=cfg.months,v=portVal(P),g=v-P.invested;
+  $('pClock').textContent=ym(t)+(t%12===0&&t?'':'')+'目';
+  $('pClockSub').textContent='全'+cfg.years+'年';
+  $('pTimebar').style.width=(t/M*100)+'%';
+  $('pVal').textContent=man(v);
+  $('pGain').innerHTML='<span class="'+(g>=0?'up':'down')+'">損益 '+sman(g)+'（'+pc(P.invested?g/P.invested:0)+'）</span>';
+  $('pInv').textContent=man(P.invested);
+  $('pCash').textContent=P.cash>0?'うち現金 '+man(P.cash):'';
+  $('pIdx').textContent=Math.round(P.idx).toLocaleString('ja-JP')+'円';
+  var dd=1-P.idx/P.idxPeak;
+  $('pDD').innerHTML=dd>0.005?'<span class="down">高値から '+pc(-dd)+'</span>':'<span class="up">高値更新中</span>';
+  drawMain($('pChart'),{upto:t,showBase:false});
+}
+
+function updateActions(){
+  var m=P.mode,pill=$('pMode');
+  pill.className='mode-pill '+m;
+  pill.textContent={normal:'積立中',paused:'積立停止中（現金で保管）',out:'全額売却済み'}[m];
+  $('btnContrib').textContent=m==='normal'?'積立を止める':m==='paused'?'積立を再開':'買い戻す';
+  $('btnSell').disabled=m==='out'||P.hold<=0;
+  $('btnCashIn').hidden=!(m!=='out'&&P.cash>0);
+  $('btnCashIn').textContent='現金 '+man(P.cash)+' を投入';
+}
+
+function act(kind){
+  var t=P.t,label='';
+  if(kind==='stop'){P.mode='paused';label='積立を止めた';}
+  else if(kind==='resume'){P.mode='normal';label='積立を再開した';}
+  else if(kind==='sell'){
+    var gain=P.hold-P.basis,tax=Math.max(0,gain)*cfg.tax;
+    P.taxPaid+=tax;P.cash+=P.hold-tax;P.hold=0;P.basis=0;P.mode='out';P.sellIdx=P.idx;
+    label='全部売った（'+man(P.cash)+'）'+(tax>0?' 税金 '+man(tax):'');
+  }else if(kind==='cashin'||kind==='buyback'){
+    label=(kind==='buyback'?'買い戻した':'現金を投入した')+'（'+man(P.cash)+'）';
+    P.hold+=P.cash;P.basis+=P.cash;P.cash=0;P.mode='normal';
+  }else if(kind==='keep'){label=P.mode==='out'?'現金のまま様子を見た':P.mode==='paused'?'積立停止のまま様子を見た':'そのまま続けた';}
+  P.actions.push({t:t,kind:kind,label:label,idx:P.idx});
+  updateActions();renderPlay();
+}
+
+/* ── 判断モーダル ── */
+function openDecision(){
+  var d=P.pending,v=portVal(P),html='',title,news;
+  var choices=[];
+  if(d.kind==='dd'){
+    var loss=P.valPeak-v,months=cfg.monthly>0?Math.round(loss/cfg.monthly):0;
+    title='📉 相場が高値から '+Math.round(d.dd*100)+'% 下落';
+    news=pick(HEADLINES[d.level]);
+    if(P.mode==='out'){
+      var since=P.idx/P.sellIdx-1;
+      html='あなたは売却済みで、現金 <b>'+man(P.cash)+'</b> を持っています。売ったときと比べて、基準価額は <b class="'+(since<0?'bad-t':'good-t')+'">'+pc(since)+'</b>。どうしますか？';
+      choices.push(['keep','現金のまま様子を見る','積立のお金も現金で貯まっていきます',true]);
+    }else{
+      html='あなたの評価額は <b>'+man(v)+'</b>。いちばん多かったときより <b class="bad-t">'+man(loss)+'</b> 減りました'+(months>1?'（毎月の積立 <b>'+months+'ヶ月分</b>）':'')+'。<br>元本 '+man(P.invested)+' に対して損益は <b class="'+(v>=P.invested?'good-t':'bad-t')+'">'+sman(v-P.invested)+'</b>。どうしますか？';
+      choices.push(['keep','このまま'+(P.mode==='paused'?'様子を見る':'積立を続ける'),P.mode==='paused'?'積立は止めたまま':'下がった価格で、同じ金額でも多く買えます',true]);
+    }
+    if(P.mode==='normal')choices.push(['stop','積立をいったん止める','毎月のお金は現金で貯めておく']);
+    if(P.mode==='paused')choices.push(['resume','積立を再開する','止めていた積立を再開']);
+    if(P.mode!=='out'&&P.cash>0)choices.push(['cashin','貯めた現金 '+man(P.cash)+' で買い増す','安いところでまとめて買う']);
+    if(P.mode!=='out'&&P.hold>0)choices.push(['sell','全部売って現金にする','これ以上の損を避ける'+(cfg.tax?'（利益があれば税金がかかります）':'')]);
+    if(P.mode==='out')choices.push(['buyback','現金 '+man(P.cash)+' で買い戻す','ここから再スタート']);
+  }else{
+    title='📈 資産が元本の '+(d.level+1)+'倍に！';
+    news=d.level>=2?'「今回は違う」「まだまだ上がる」という声が増えています':'投資を始める人が急増しています';
+    html='評価額 <b>'+man(v)+'</b>、元本 '+man(P.invested)+' に対して <b class="good-t">'+sman(v-P.invested)+'</b> の利益です。どうしますか？';
+    choices.push(['keep','このまま積立を続ける','上がっていても淡々と続ける',true]);
+    if(P.hold>0)choices.push(['sell','全部売って利益を確定する','現金で持っておく'+(cfg.tax?'（利益に税金がかかります）':'')]);
+    if(P.mode==='normal')choices.push(['stop','積立を止めて様子を見る','高値づかみを避けたい']);
+  }
+  $('mTitle').textContent=title;$('mNews').textContent='ニュース：'+news;$('mBody').innerHTML=html;
+  $('mChoices').innerHTML=choices.map(function(c){return '<button class="btn'+(c[3]?' btn-primary':'')+'" data-k="'+c[0]+'">'+esc(c[1])+'<small>'+esc(c[2])+'</small></button>';}).join('');
+  $('mNoMore').checked=false;
+  $('overlay').hidden=false;$('mTitle').focus();
+}
+$('mChoices').addEventListener('click',function(e){
+  var b=e.target.closest('button');if(!b)return;
+  var k=b.getAttribute('data-k'),d=P.pending;P.pending=null;
+  if($('mNoMore').checked)P.ask=false;
+  $('overlay').hidden=true;
+  act(k);
+  P.actions[P.actions.length-1].prompt=d.kind==='dd'?'高値から'+Math.round(d.dd*100)+'%下落':'元本の'+(d.level+1)+'倍';
+  resume();
+});
+
+/* ── 結果 ── */
+function finish(){
+  pause();
+  var M=cfg.months,fin=finalAfterTax(P,cfg),bfin=finalAfterTax(B,cfg);
+  var tax=P.taxPaid+Math.max(0,P.hold-P.basis)*cfg.tax;
+  var btax=Math.max(0,B.hold-B.basis)*cfg.tax;
+  var acted=P.actions.some(function(a){return a.kind!=='keep';});
+  var R={fin:fin,bfin:bfin,tax:tax,btax:btax,acted:acted,irr:irr(cfg,fin,M),birr:irr(cfg,bfin,M)};
+  P.result=R;
+  show('result');
+  var diff=fin-bfin,vd=$('verdict');
+  $('vLead').textContent=cfg.years+'年後のあなたの資産'+(cfg.tax?'（税引後）':'');
+  $('vVal').textContent=man(fin);
+  var prof=fin-P.invested,txt='元本 '+man(P.invested)+' に対して '+sman(prof)+'（'+pc(prof/P.invested)+'）。';
+  if(isFinite(R.irr))txt+='積立の実質利回りは 年'+pc(R.irr).replace('+','')+' でした。';
+  if(acted){
+    if(Math.abs(diff)<bfin*0.01){vd.className='verdict even';txt+='<br>途中で判断を変えましたが、淡々と続けた場合とほぼ同じ結果でした。';}
+    else if(diff<0){vd.className='verdict bad';txt+='<br>何もせず続けていれば <b>'+man(bfin)+'</b>。判断を変えたことで <b>'+man(-diff)+'</b> 少なくなりました。';}
+    else{vd.className='verdict good';txt+='<br>何もせず続けた場合（'+man(bfin)+'）より <b>'+man(diff)+'</b> 多くなりました。ただし、売り買いのタイミングが毎回当たるとは限りません。';}
+  }else{
+    vd.className='verdict '+(prof>=0?'good':'bad');
+    txt+='<br>途中の上げ下げに動じず、最後まで続けた結果です。';
+  }
+  $('vText').innerHTML=txt;
+  // 凡例
+  $('rLegend').innerHTML='<span style="--c:var(--s1)">あなたの評価額</span>'+(acted?'<span style="--c:var(--s2)">何もせず続けた場合</span>':'')+'<span class="dash" style="--c:var(--line-muted)">元本</span><span class="box" style="--c:var(--shade-crash)">暴落局面</span><span class="box" style="--c:var(--shade-boom)">上昇相場</span>';
+  renderResultCharts();
+  renderTable(R);renderEvents();renderActionsList();
+  $('vVal').focus();
+  $('mcBody').innerHTML='<p class="lead">計算中…</p>';
+  setTimeout(runMC,30);
+}
+
+function renderResultCharts(){
+  if(!P||!P.result)return;
+  drawMain($('rChart'),{upto:cfg.months,showBase:P.result.acted,hover:true});
+  drawIdx($('rIdxChart'));
+}
+
+function renderTable(R){
+  var h='<tr><th></th><th>あなた</th>'+(R.acted?'<th>続けた場合</th>':'')+'</tr>';
+  function row(k,a,b,cls){return '<tr><td>'+k+'</td><td class="'+(cls||'')+'">'+a+'</td>'+(R.acted?'<td>'+b+'</td>':'')+'</tr>';}
+  h+=row('投資した元本',man(P.invested),man(B.invested));
+  h+=row('最終的な評価額<small>税金を引く前</small>',man(P.hold+P.cash+P.taxPaid),man(B.hold));
+  if(cfg.tax)h+=row('税金<small>売却時＋最後の利益に 20.315%</small>','−'+man(R.tax),'−'+man(R.btax));
+  h+=row('手元に残るお金',man(R.fin),man(R.bfin));
+  h+=row('損益',sman(R.fin-P.invested),sman(R.bfin-B.invested),R.fin>=P.invested?'good-t':'bad-t');
+  h+=row('積立の実質利回り<small>年率</small>',isFinite(R.irr)?pc(R.irr):'—',isFinite(R.birr)?pc(R.birr):'—');
+  h+=row('相場の最大下落<small>基準価額の高値から</small>',pc(-P.maxDD),pc(-P.maxDD));
+  h+=row('評価額の最大の目減り<small>いちばん多かったときから</small>','−'+man(P.maxLoss),'—');
+  var fees=cfg.fee*100;
+  h+='<tr><td colspan="'+(R.acted?3:2)+'" style="font-size:11px;color:var(--muted);text-align:left;font-weight:400">信託報酬 年'+fees.toFixed(2)+'% は基準価額から毎月差し引いて計算しています。</td></tr>';
+  $('rTable').innerHTML=h;
+}
+
+function renderEvents(){
+  var M=cfg.months,html='';
+  var evs=path.events.filter(function(e){return e.start<M;});
+  if(!evs.length)html='<p class="lead">今回の'+cfg.years+'年間は、歴史に残るような大暴落・バブルは起きませんでした（通常の上下のブレだけ）。ただし統計上、30年あれば4〜5回は大きな下落が起きるのがふつうです。</p>';
+  evs.forEach(function(e){
+    var crash=e.ev.type==='crash',done=e.end<=M;
+    var chg=crash?pc(-e.depth,0):pc(e.gainScaled,0);
+    var badges='';
+    if(crash){
+      badges+='<span class="badge bad">下げた期間 '+ym(Math.min(e.ev.down,M-e.start))+'</span>';
+      badges+=done?'<span class="badge good">高値回復まで '+ym(e.end-e.start)+'</span>':'<span class="badge warn">期間内に回復しきらず</span>';
+    }else badges+='<span class="badge good">上昇期間 '+ym(Math.min(e.ev.months,M-e.start))+'</span>';
+    html+='<div class="h-item"><div class="h-rate '+(crash?'bad-t':'good-t')+'">'+chg+'</div><div class="h-body"><div class="h-period">'+ym(e.start)+'目〜</div><div class="h-label">'+esc(e.ev.name)+'</div><div class="h-desc">史実：'+esc(e.ev.hist)+'。'+esc(e.ev.desc)+'</div>'+badges+'</div></div>';
+  });
+  $('rEvents').innerHTML=html;
+}
+
+function renderActionsList(){
+  var list=P.actions;
+  $('rActionsCard').hidden=!list.length;
+  $('rActions').innerHTML=list.map(function(a){
+    var after=P.idxA[cfg.months]/a.idx-1;
+    var cls=a.kind==='keep'?'accent':(a.kind==='sell'||a.kind==='stop')?'warn':'good';
+    return '<div class="h-item"><div class="h-rate">'+ym(a.t)+'目</div><div class="h-body"><div class="h-label">'+esc(a.label)+'</div><div class="h-desc">'+(a.prompt?esc(a.prompt)+'のとき。':'')+'このあと最後までに、基準価額は '+pc(after,0)+' 動きました。</div><span class="badge '+cls+'">'+({keep:'続行',stop:'積立停止',resume:'積立再開',sell:'売却',cashin:'買い増し',buyback:'買い戻し'})[a.kind]+'</span></div></div>';
+  }).join('');
+}
+
+/* ── 1,000通りのモンテカルロ ── */
+function runMC(){
+  var N=1000,M=cfg.months,step=M>240?3:1,cols=Math.floor(M/step)+1;
+  var grid=new Float64Array(N*cols),finals=new Float64Array(N);
+  var below=0,everBelow=0,big=0,ddSum=0,ddList=new Float64Array(N);
+  for(var n=0;n<N;n++){
+    var p=genPath(cfg,seed+7919*(n+1)),pt=newPort(cfg),idx=1,peak=1,mdd=0,eb=false;
+    grid[n*cols]=portVal(pt);
+    for(var t=0;t<M;t++){
+      stepPort(pt,cfg,p.r[t]);
+      idx*=Math.exp(p.r[t]);if(idx>peak)peak=idx;var dd=1-idx/peak;if(dd>mdd)mdd=dd;
+      if(t>=11&&pt.hold<pt.invested)eb=true;
+      if((t+1)%step===0)grid[n*cols+(t+1)/step]=pt.hold;
+    }
+    finals[n]=finalAfterTax(pt,cfg);
+    if(finals[n]<pt.invested)below++;
+    if(eb)everBelow++;
+    if(mdd>=0.3)big++;
+    ddList[n]=mdd;
+  }
+  var qs=[.1,.25,.5,.75,.9],band=qs.map(function(){return new Float64Array(cols);}),col=new Float64Array(N);
+  for(var c=0;c<cols;c++){
+    for(var i=0;i<N;i++)col[i]=grid[i*cols+c];
+    col.sort();
+    qs.forEach(function(q,k){band[k][c]=col[Math.min(N-1,Math.floor(q*(N-1)))];});
+  }
+  var sf=Float64Array.from(finals).sort();
+  function q(x){return sf[Math.min(N-1,Math.floor(x*(N-1)))];}
+  var mine=P.result.bfin,rank=0;for(var j=0;j<N;j++)if(finals[j]<mine)rank++;
+  var you=P.result.fin,rankYou=0;for(var k2=0;k2<N;k2++)if(finals[k2]<you)rankYou++;
+  var inv=P.invested,sdd=Float64Array.from(ddList).sort();
+  MC={band:band,step:step,cols:cols};
+  var html='<div class="chart-wrap"><canvas id="mcChart" class="chart"></canvas></div>'+
+    '<div class="legend"><span style="--c:var(--s1)">ちょうど真ん中</span><span class="box" style="--c:var(--band-inner)">真ん中の50%</span><span class="box" style="--c:var(--band-outer)">10%〜90%</span><span class="dash" style="--c:var(--line-muted)">元本</span><span style="--c:var(--s2)">今回の未来</span></div>'+
+    '<div class="kpis">'+
+    kpi('ちょうど真ん中（中央値）',man(q(.5)),'元本 '+man(inv)+' の '+(q(.5)/inv).toFixed(1)+'倍')+
+    kpi('運が悪いと（下位10%）',man(q(.1)),'運が良いと（上位10%）'+man(q(.9)))+
+    kpi('最後に元本割れする確率',Math.round(below/N*100)+'%','1,000通り中 '+below+'通り')+
+    kpi('途中で元本割れを経験',Math.round(everBelow/N*100)+'%','2年目以降に一度でも')+
+    kpi('30%以上の暴落に遭う確率',Math.round(big/N*100)+'%','期間中に一度でも')+
+    kpi('最大下落の中央値',pc(-sdd[Math.floor(N/2)],0),'基準価額の高値から')+
+    '</div>'+
+    '<p class="lead" style="margin-top:12px">今回の未来の相場は、1,000通りの中で <b>下から'+Math.round(rank/N*100)+'%</b> の位置（'+(rank/N>=.5?'運が良い方':'運が悪い方')+'）でした。'+
+    (P.result.acted?'あなたの判断を含めた結果は、何もせず続けた1,000通りの中で下から'+Math.round(rankYou/N*100)+'%にあたります。':'')+'</p>'+
+    '<p class="note">'+(cfg.forced?'※「'+esc(EVMAP[cfg.forced.id].name)+'」が'+Math.round(cfg.forced.month/12)+'年目に必ず起きる前提で、それ以外の値動きを変えて試しています。':'※ 暴落・高騰の起き方を毎回変えて、何もせず積み立て続けた場合を計算しています。')+'</p>';
+  $('mcBody').innerHTML=html;
+  drawMC();
+}
+var MC=null;
+function kpi(k,v,s){return '<div class="kpi"><div class="kpi-k">'+k+'</div><div class="kpi-v">'+v+'</div><div class="kpi-s">'+s+'</div></div>';}
+
+/* ── グラフ描画 ── */
+function css(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim();}
+function niceMax(v){if(v<=0)return 1;var e=Math.pow(10,Math.floor(Math.log10(v))),f=v/e,st=[1,1.2,1.6,2,2.4,3,4,5,6,8,10];for(var i=0;i<st.length;i++)if(f<=st[i]+1e-9)return st[i]*e;return 10*e;}
+function setupCanvas(cv){
+  var W=cv.clientWidth,H=cv.clientHeight,dpr=window.devicePixelRatio||1;
+  if(!W)return null;
+  cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);
+  var ctx=cv.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,W,H);
+  return {ctx:ctx,W:W,H:H};
+}
+function frame(g,M,maxV,minV,fmt){
+  var pl=46,pr=10,pt=10,pb=22,cw=g.W-pl-pr,ch=g.H-pt-pb,ctx=g.ctx;
+  var f={pl:pl,pt:pt,cw:cw,ch:ch,M:M,
+    x:function(t){return pl+t/M*cw;},
+    y:function(v){return pt+ch*(1-(v-minV)/(maxV-minV));}};
+  ctx.font='10px -apple-system,BlinkMacSystemFont,sans-serif';ctx.lineWidth=1;ctx.textAlign='right';
+  for(var i=0;i<=4;i++){
+    var v=minV+(maxV-minV)*i/4,gy=f.y(v);
+    ctx.strokeStyle=css('--border');ctx.beginPath();ctx.moveTo(pl,gy);ctx.lineTo(pl+cw,gy);ctx.stroke();
+    ctx.fillStyle=css('--muted');ctx.fillText(fmt(v),pl-6,gy+3.5);
+  }
+  ctx.textAlign='center';
+  var years=M/12,st=years<=10?2:years<=25?5:10;
+  for(var yy=0;yy<=years;yy+=st)ctx.fillText(yy+'年',f.x(yy*12),g.H-6);
+  return f;
+}
+function shades(g,f,upto){
+  var ctx=g.ctx,cc=css('--shade-crash'),cb=css('--shade-boom');
+  path.events.forEach(function(e){
+    if(e.start>=upto)return;
+    var a=e.start,b=Math.min(e.ev.type==='crash'?e.bottom:e.end,upto,f.M);
+    ctx.fillStyle=e.ev.type==='crash'?cc:cb;
+    ctx.fillRect(f.x(a),f.pt,Math.max(1,f.x(b)-f.x(a)),f.ch);
+  });
+}
+function line(g,f,arr,upto,color,w,dash,step){
+  var ctx=g.ctx;step=step||1;
+  ctx.save();ctx.beginPath();ctx.strokeStyle=color;ctx.lineWidth=w;ctx.lineJoin='round';
+  if(dash)ctx.setLineDash(dash);
+  for(var i=0;i*step<=upto&&i<arr.length;i++){var X=f.x(i*step),Y=f.y(arr[i]);i?ctx.lineTo(X,Y):ctx.moveTo(X,Y);}
+  ctx.stroke();ctx.restore();
+}
+function dot(g,f,t,v,color){var ctx=g.ctx;ctx.fillStyle=css('--surface');ctx.beginPath();ctx.arc(f.x(t),f.y(v),5,0,7);ctx.fill();ctx.fillStyle=color;ctx.beginPath();ctx.arc(f.x(t),f.y(v),3.5,0,7);ctx.fill();}
+
+var hoverT={};
+function drawMain(cv,o){
+  var g=setupCanvas(cv);if(!g)return;
+  var M=cfg.months,u=o.upto,mx=0;
+  for(var i=0;i<=u;i++){mx=Math.max(mx,P.val[i],P.inv[i],o.showBase?P.base[i]:0);}
+  // 体験中は先の元本まで見えるように軸を取る
+  var futureInv=cfg.lump+cfg.monthly*M;
+  var maxV=niceMax(Math.max(mx*1.08,o.upto<M?Math.min(futureInv,mx*3):0,1));
+  var f=frame(g,M,maxV,0,axisMan);
+  shades(g,f,u);
+  line(g,f,P.inv,u,css('--line-muted'),1.5,[4,3]);
+  if(o.showBase)line(g,f,P.base,u,css('--s2'),2);
+  line(g,f,P.val,u,css('--s1'),2);
+  // 判断マーカー
+  var ctx=g.ctx;
+  P.actions.forEach(function(a){
+    if(a.kind==='keep'||a.t>u)return;
+    var X=f.x(a.t),Y=f.y(P.val[a.t]);
+    ctx.fillStyle=css('--text');ctx.beginPath();ctx.moveTo(X,Y-6);ctx.lineTo(X-5,Y-14);ctx.lineTo(X+5,Y-14);ctx.closePath();ctx.fill();
+  });
+  dot(g,f,u,P.val[u],css('--s1'));
+  if(o.hover)hoverLayer(cv,g,f,function(t){
+    var s='<b>'+ym(t)+'目</b><br><i style="--c:var(--s1)"></i>評価額 '+man(P.val[t]);
+    if(o.showBase)s+='<br><i style="--c:var(--s2)"></i>続けた場合 '+man(P.base[t]);
+    s+='<br><i style="--c:var(--line-muted)"></i>元本 '+man(P.inv[t]);
+    return s;
+  },function(t){var a=[[P.val[t],css('--s1')],[P.inv[t],css('--line-muted')]];if(o.showBase)a.push([P.base[t],css('--s2')]);return a;},M,1);
+}
+function drawIdx(cv){
+  var g=setupCanvas(cv);if(!g)return;
+  var M=cfg.months,mx=0,mn=Infinity;
+  for(var i=0;i<=M;i++){mx=Math.max(mx,P.idxA[i]);mn=Math.min(mn,P.idxA[i]);}
+  var maxV=niceMax(mx*1.05),minV=0;
+  var f=frame(g,M,maxV,minV,function(v){return Math.round(v).toLocaleString('ja-JP');});
+  shades(g,f,M);
+  var ctx=g.ctx;ctx.save();ctx.strokeStyle=css('--line-muted');ctx.setLineDash([2,3]);ctx.beginPath();ctx.moveTo(f.pl,f.y(10000));ctx.lineTo(f.pl+f.cw,f.y(10000));ctx.stroke();ctx.restore();
+  line(g,f,P.idxA,M,css('--s1'),2);
+  hoverLayer(cv,g,f,function(t){
+    var peak=0;for(var k=0;k<=t;k++)peak=Math.max(peak,P.idxA[k]);
+    return '<b>'+ym(t)+'目</b><br>基準価額 '+Math.round(P.idxA[t]).toLocaleString('ja-JP')+'円'+(P.idxA[t]<peak*0.995?'<br>高値から '+pc(P.idxA[t]/peak-1):'');
+  },function(t){return [[P.idxA[t],css('--s1')]];},M,1);
+}
+function drawMC(){
+  var cv=$('mcChart');if(!cv||!MC)return;
+  var g=setupCanvas(cv);if(!g)return;
+  var M=cfg.months,b=MC.band,st=MC.step,cols=MC.cols;
+  var mx=Math.max(b[4][cols-1],P.base[M]);
+  var f=frame(g,M,niceMax(mx*1.05),0,axisMan),ctx=g.ctx;
+  function area(lo,hi,color){
+    ctx.beginPath();for(var i=0;i<cols;i++){var X=f.x(i*st);i?ctx.lineTo(X,f.y(hi[i])):ctx.moveTo(X,f.y(hi[i]));}
+    for(var j=cols-1;j>=0;j--)ctx.lineTo(f.x(j*st),f.y(lo[j]));
+    ctx.closePath();ctx.fillStyle=color;ctx.fill();
+  }
+  area(b[0],b[4],css('--band-outer'));area(b[1],b[3],css('--band-inner'));
+  line(g,f,P.inv,M,css('--line-muted'),1.5,[4,3]);
+  line(g,f,P.base,M,css('--s2'),1.5);
+  line(g,f,b[2],M,css('--s1'),2,null,st);
+  hoverLayer(cv,g,f,function(t){
+    var c=Math.round(t/st);t=c*st;
+    return '<b>'+ym(t)+'目</b><br>上位10% '+man(b[4][c])+'<br><i style="--c:var(--s1)"></i>真ん中 '+man(b[2][c])+'<br>下位10% '+man(b[0][c])+'<br><i style="--c:var(--line-muted)"></i>元本 '+man(P.inv[t]);
+  },function(t){var c=Math.round(t/st);return [[b[2][c],css('--s1')]];},M,st);
+}
+
+// クロスヘア＋ツールチップ
+function hoverLayer(cv,g,f,tipFn,dotsFn,M,step){
+  var wrap=cv.parentNode,tip=wrap.querySelector('.tip');
+  if(!tip){tip=document.createElement('div');tip.className='tip';tip.hidden=true;wrap.appendChild(tip);}
+  var snap=g.ctx.getImageData(0,0,cv.width,cv.height);
+  function at(ev){
+    var r=cv.getBoundingClientRect(),x=ev.clientX-r.left;
+    var t=Math.round(((x-f.pl)/f.cw*M)/step)*step;t=Math.max(0,Math.min(M,t));
+    g.ctx.putImageData(snap,0,0);
+    var dpr=window.devicePixelRatio||1;g.ctx.setTransform(dpr,0,0,dpr,0,0);
+    var X=f.x(t);
+    g.ctx.strokeStyle=css('--muted');g.ctx.lineWidth=1;g.ctx.beginPath();g.ctx.moveTo(X,f.pt);g.ctx.lineTo(X,f.pt+f.ch);g.ctx.stroke();
+    dotsFn(t).forEach(function(d){dot(g,f,t,d[0],d[1]);});
+    tip.innerHTML=tipFn(t);tip.hidden=false;
+    var tw=tip.offsetWidth,left=X+12;if(left+tw>g.W)left=X-12-tw;
+    tip.style.left=Math.max(0,left)+'px';tip.style.top='4px';
+  }
+  function leave(){g.ctx.putImageData(snap,0,0);tip.hidden=true;}
+  cv.onpointermove=at;cv.onpointerdown=at;cv.onpointerleave=leave;
+}
+
+/* ── 画面切替 ── */
+function show(id){
+  ['setup','play','result'].forEach(function(s){$(s).hidden=s!==id;});
+  window.scrollTo(0,0);
+}
+
+/* ── 設定画面 ── */
+function buildSetup(){
+  $('assetSeg').innerHTML=Object.keys(ASSETS).map(function(k){var a=ASSETS[k];return '<button data-v="'+k+'"'+(k===S.asset?' class="on"':'')+'>'+a.name+'<small>'+a.sub+(a.ret!==null?' 年'+a.ret+'%':'')+'</small></button>';}).join('');
+  $('forcedEv').innerHTML=EVENTS.map(function(e){return '<option value="'+e.id+'">'+(e.type==='crash'?'📉 ':'📈 ')+e.name+'（'+(e.type==='crash'?'−'+Math.round(e.dd*100)+'%':'+'+Math.round(e.gain*100)+'%')+'）'+e.hist+'</option>';}).join('');
+  $('forcedEv').value='gfc';
+  var h='<table class="bd"><tr><th>型（史実）</th><th>変動</th><th>頻度</th></tr>';
+  EVENTS.forEach(function(e){
+    var ch=e.type==='crash'?'<span class="bad-t">−'+Math.round(e.dd*100)+'%</span><small>'+ym(e.down)+'で底、回復'+ym(e.down+e.up)+'</small>':'<span class="good-t">+'+Math.round(e.gain*100)+'%</span><small>'+ym(e.months)+'で</small>';
+    var fr='約'+Math.round(1/e.p)+'年に1度'+(e.pjp?'<small>日本株は約'+Math.round(1/e.pjp)+'年に1度</small>':'');
+    h+='<tr><td><b>'+e.name+'</b><small>'+e.hist+'</small></td><td>'+ch+'</td><td>'+fr+'</td></tr>';
+  });
+  h+='</table><p class="note">米国株では高値から20%以上の下落が過去80年で十数回（約6年に1度）、40%以上は約20〜25年に1度起きています。バブル的な上昇のあと3年間は、暴落の確率を3倍にしています。暴落・高騰を含めた長期平均が「期待リターン」になるよう、ふだんの月の値動きを自動で調整しています。</p>';
+  $('evTable').innerHTML=h;
+  applyAsset();
+}
+function applyAsset(){
+  var a=ASSETS[S.asset];
+  if(a.ret!==null){$('ret').value=a.ret;$('vol').value=a.vol;$('fee').value=a.fee;}
+  else $('advanced').open=true;
+  hint();
+}
+function hint(){
+  var m=gv('monthly')*10000,l=gv('lump')*10000,y=Math.round(gv('years'));
+  var tot=l+m*12*y;
+  $('setupHint').innerHTML=y>0?'元本の合計は <b>'+man(tot)+'</b>（'+y+'年）。'+(S.mode==='random'?'統計上、この期間に大きな下落（−20%以上）が <b>約'+Math.max(0,Math.round(y/6.4*S.freq))+'回</b> 起きる計算です。':'指定した出来事を、'+Math.min(y-1,Math.max(0,Math.round(gv('forcedYear'))))+'年目に起こします。'):'';
+  var w='';
+  if(S.tax==='nisa'){
+    if(m*12>3600000)w='新NISAで積み立てられるのは年360万円（月30万円）までです。この試算では全額を非課税として計算します。';
+    else if(tot>18000000)w='新NISAの生涯の非課税枠は1,800万円です。元本がこれを超える分は、実際には課税口座での運用になります（この試算では全額非課税で計算）。';
+  }
+  $('nisaWarn').textContent=w;$('nisaWarn').hidden=!w;
+}
+function seg(id,fn){
+  $(id).addEventListener('click',function(e){
+    var b=e.target.closest('button');if(!b)return;
+    [].forEach.call($(id).querySelectorAll('button'),function(x){x.classList.toggle('on',x===b);});
+    fn(b.getAttribute('data-v'));
+  });
+}
+seg('assetSeg',function(v){S.asset=v;applyAsset();});
+seg('taxSeg',function(v){S.tax=v;hint();});
+seg('freqSeg',function(v){S.freq=Number(v);hint();});
+seg('modeSeg',function(v){S.mode=v;$('forcedField').hidden=v!=='forced';$('freqField').hidden=v==='forced';hint();});
+seg('speedSeg',function(v){speed=Number(v);});
+['monthly','lump','years','forcedYear'].forEach(function(id){$(id).addEventListener('input',hint);});
+['ret','vol','fee'].forEach(function(id){$(id).addEventListener('input',function(){
+  if(S.asset!=='custom'){S.asset='custom';[].forEach.call($('assetSeg').querySelectorAll('button'),function(x){x.classList.toggle('on',x.getAttribute('data-v')==='custom');});}
+});});
+
+$('btnStart').onclick=function(){if(validate())startRun(true,false);};
+$('btnInstant').onclick=function(){if(validate())startRun(true,true);};
+$('btnPause').onclick=function(){if(P.running)pause();else resume();};
+$('btnSkip').onclick=function(){
+  pause();P.ask=false;
+  while(P.t<cfg.months)stepMonth();
+  P.pending=null;finish();
+};
+$('btnContrib').onclick=function(){act(P.mode==='normal'?'stop':P.mode==='paused'?'resume':'buyback');};
+$('btnSell').onclick=function(){act('sell');};
+$('btnCashIn').onclick=function(){act('cashin');};
+$('btnReplay').onclick=function(){startRun(false,false);};
+$('btnAgain').onclick=function(){startRun(true,false);};
+$('btnBack').onclick=function(){show('setup');};
+document.addEventListener('visibilitychange',function(){if(document.hidden&&P&&P.running)pause();});
+var rt;window.addEventListener('resize',function(){clearTimeout(rt);rt=setTimeout(function(){
+  if(!$('play').hidden&&P)renderPlay();
+  if(!$('result').hidden){renderResultCharts();drawMC();}
+},150);});
+if(window.matchMedia)window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',function(){if(!$('result').hidden){renderResultCharts();drawMC();}else if(P&&!$('play').hidden)renderPlay();});
+
+buildSetup();
+</script>
+</body>
+</html>
